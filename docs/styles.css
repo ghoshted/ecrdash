@@ -1,0 +1,152 @@
+:root {
+  --bg: #f7f7f7;
+  --surface: #ffffff;
+  --text: #171717;
+  --muted: #5f6368;
+  --line: #e4e6e8;
+  --accent: #1f6feb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.layout {
+  width: min(1080px, calc(100% - 2rem));
+  margin: 1.5rem auto 2rem;
+}
+
+.hero h1 {
+  font-size: clamp(1.6rem, 3.8vw, 2.4rem);
+  line-height: 1.15;
+  margin: 0.2rem 0 0.35rem;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.subtitle {
+  max-width: 72ch;
+  color: var(--muted);
+  margin: 0;
+}
+
+.meta {
+  margin-top: 0.5rem;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.cards {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem 0.9rem;
+}
+
+.card-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.card-value {
+  margin-top: 0.3rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.panel-grid {
+  margin-top: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.panel {
+  margin-top: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.7rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  padding: 0.55rem 0.4rem;
+  white-space: nowrap;
+}
+
+th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+td {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+canvas {
+  max-height: 280px;
+}
+
+@media (max-width: 850px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}

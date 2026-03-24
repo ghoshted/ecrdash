@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ECRDash Report Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="layout">
+      <header class="hero">
+        <p class="eyebrow">ECRDash</p>
+        <h1>Compute Reports</h1>
+        <p class="subtitle">A live dashboard generated from JSON execution reports committed in this repository.</p>
+        <p class="meta">Last generated: <span id="generatedAt">loading...</span></p>
+      </header>
+
+      <section class="cards" id="summaryCards"></section>
+
+      <section class="panel-grid">
+        <article class="panel">
+          <h2>Report Runs Per Tool</h2>
+          <canvas id="toolChart" height="130"></canvas>
+        </article>
+
+        <article class="panel">
+          <h2>Runtime Trend (Minutes / Day)</h2>
+          <canvas id="runtimeChart" height="130"></canvas>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <h2>Latest Report Runs</h2>
+          <p class="hint">Most recent first</p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Start Time</th>
+                <th>Tool</th>
+                <th>Duration</th>
+                <th>Input</th>
+                <th>Output</th>
+                <th>CPU</th>
+                <th>GPU</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
