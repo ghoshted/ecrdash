@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-24T23:11:33.095Z",
+  "generatedAt": "2026-03-24T23:30:12.910Z",
   "reportCount": 29,
   "summary": {
     "totals": {
@@ -220,6 +220,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-24T14:20:14.930108",
       "endTime": "2025-12-24T19:13:18.619657",
       "startDay": "2025-12-24",
@@ -241,6 +242,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-26T09:29:51.673743",
       "endTime": "2025-12-26T09:34:46.023426",
       "startDay": "2025-12-26",
@@ -262,6 +264,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-26T09:29:51.673746",
       "endTime": "2025-12-26T09:34:53.688482",
       "startDay": "2025-12-26",
@@ -283,6 +286,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-26T09:29:51.673748",
       "endTime": "2025-12-26T09:35:03.418775",
       "startDay": "2025-12-26",
@@ -304,6 +308,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-26T09:29:51.673750",
       "endTime": "2025-12-26T09:34:46.655048",
       "startDay": "2025-12-26",
@@ -325,6 +330,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-26T09:29:51.673751",
       "endTime": "2025-12-26T09:34:35.148217",
       "startDay": "2025-12-26",
@@ -346,6 +352,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-29T09:14:25.118387",
       "endTime": "2025-12-29T09:14:52.708622",
       "startDay": "2025-12-29",
@@ -367,6 +374,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T09:18:17.805667",
       "endTime": "2025-12-30T09:19:44.329586",
       "startDay": "2025-12-30",
@@ -388,6 +396,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T09:18:18.760779",
       "endTime": "2025-12-30T09:19:44.368574",
       "startDay": "2025-12-30",
@@ -409,6 +418,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T09:57:01.083918",
       "endTime": "2025-12-30T09:59:01.996802",
       "startDay": "2025-12-30",
@@ -430,6 +440,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T10:31:20.997219",
       "endTime": "2025-12-30T10:32:57.655390",
       "startDay": "2025-12-30",
@@ -451,6 +462,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T10:33:43.986778",
       "endTime": "2025-12-30T10:44:53.186129",
       "startDay": "2025-12-30",
@@ -472,6 +484,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T11:11:33.638312",
       "endTime": "2025-12-30T11:16:13.791205",
       "startDay": "2025-12-30",
@@ -493,6 +506,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T11:15:28.288533",
       "endTime": "2025-12-30T11:16:03.227646",
       "startDay": "2025-12-30",
@@ -514,6 +528,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-30T12:12:58.919386",
       "endTime": "2025-12-30T12:13:22.383651",
       "startDay": "2025-12-30",
@@ -535,6 +550,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T09:42:03.737302",
       "endTime": "2025-12-31T09:42:36.078170",
       "startDay": "2025-12-31",
@@ -556,6 +572,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T09:50:22.516854",
       "endTime": "2025-12-31T09:50:47.863298",
       "startDay": "2025-12-31",
@@ -577,6 +594,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:00:35.172447",
       "endTime": "2025-12-31T10:00:52.960369",
       "startDay": "2025-12-31",
@@ -598,6 +616,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:04:38.788699",
       "endTime": "2025-12-31T10:05:45.724589",
       "startDay": "2025-12-31",
@@ -619,6 +638,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:15:03.614992",
       "endTime": "2025-12-31T10:15:27.471755",
       "startDay": "2025-12-31",
@@ -640,6 +660,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:24:22.665006",
       "endTime": "2025-12-31T10:24:52.556823",
       "startDay": "2025-12-31",
@@ -661,6 +682,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:25:39.417696",
       "endTime": "2025-12-31T10:26:08.026083",
       "startDay": "2025-12-31",
@@ -682,6 +704,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:30:30.879155",
       "endTime": "2025-12-31T10:30:49.246250",
       "startDay": "2025-12-31",
@@ -703,6 +726,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:31:31.212524",
       "endTime": "2025-12-31T10:31:55.794593",
       "startDay": "2025-12-31",
@@ -724,6 +748,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:34:20.159838",
       "endTime": "2025-12-31T10:35:37.091243",
       "startDay": "2025-12-31",
@@ -745,6 +770,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:35:06.971364",
       "endTime": "2025-12-31T10:36:03.596079",
       "startDay": "2025-12-31",
@@ -766,6 +792,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:35:42.191772",
       "endTime": "2025-12-31T10:36:46.700269",
       "startDay": "2025-12-31",
@@ -787,6 +814,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T10:35:59.568292",
       "endTime": "2025-12-31T10:36:46.703605",
       "startDay": "2025-12-31",
@@ -808,6 +836,7 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
+      "location": null,
       "startTime": "2025-12-31T11:33:17.832421",
       "endTime": "2025-12-31T11:34:07.328067",
       "startDay": "2025-12-31",

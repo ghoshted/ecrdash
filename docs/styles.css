@@ -116,6 +116,20 @@ body {
   overflow-x: auto;
 }
 
+#locationMap {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.map-status {
+  margin: 0.55rem 0 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -148,5 +162,9 @@ canvas {
 @media (max-width: 850px) {
   .panel-grid {
     grid-template-columns: 1fr;
+  }
+
+  #locationMap {
+    height: 260px;
   }
 }

@@ -56,6 +56,28 @@ function isoDay(ts) {
   return d.toISOString().slice(0, 10);
 }
 
+function normalizeLocation(location) {
+  const name = (location?.name ?? "").trim();
+  const address = location?.address ?? {};
+  const addressCountry = (address.addressCountry ?? "").trim();
+  const addressRegion = (address.addressRegion ?? "").trim();
+  const addressLocality = (address.addressLocality ?? "").trim();
+  const postalCode = (address.postalCode ?? "").trim();
+
+  const hasValue = [name, addressCountry, addressRegion, addressLocality, postalCode].some(Boolean);
+  if (!hasValue) {
+    return null;
+  }
+
+  return {
+    name,
+    addressCountry,
+    addressRegion,
+    addressLocality,
+    postalCode,
+  };
+}
+
 function summarize(reports) {
   const totals = {
     reports: reports.length,
@@ -143,6 +165,7 @@ async function loadReports() {
       toolVersion: json.tool?.version ?? "",
       packageVersion: json.tool?.package_version ?? "",
       infra: Array.isArray(json.infra) ? json.infra.map((x) => x.infra_name).filter(Boolean) : [],
+      location: normalizeLocation(json.location),
       startTime,
       endTime,
       startDay: isoDay(startTime),

@@ -134,6 +134,101 @@ function renderTable(reports) {
   }
 }
 
+function locationQuery(location) {
+  if (!location) return "";
+  return [
+    location.name,
+    location.addressLocality,
+    location.addressRegion,
+    location.postalCode,
+    location.addressCountry,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+async function geocode(query) {
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "json");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("q", query);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) {
+    return null;
+  }
+
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    return null;
+  }
+
+  const first = data[0];
+  const lat = Number(first.lat);
+  const lon = Number(first.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return null;
+  }
+
+  return {
+    lat,
+    lon,
+    displayName: first.display_name || query,
+  };
+}
+
+async function renderLocationMap(reports) {
+  const statusEl = document.getElementById("locationMapStatus");
+  const map = L.map("locationMap", {
+    zoomControl: true,
+  }).setView([20, 0], 2);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  const locationCounts = new Map();
+  for (const report of reports) {
+    const query = locationQuery(report.location);
+    if (!query) continue;
+    const current = locationCounts.get(query) ?? 0;
+    locationCounts.set(query, current + 1);
+  }
+
+  const queries = [...locationCounts.keys()];
+  if (queries.length === 0) {
+    statusEl.textContent = "No populated location fields were found in reports.";
+    return;
+  }
+
+  statusEl.textContent = "Resolving location coordinates...";
+
+  const markers = [];
+  for (const query of queries) {
+    try {
+      const result = await geocode(query);
+      if (!result) continue;
+
+      const count = locationCounts.get(query) ?? 0;
+      const marker = L.marker([result.lat, result.lon]).addTo(map);
+      marker.bindPopup(`<strong>${query}</strong><br/>Reports: ${count}<br/>${result.displayName}`);
+      markers.push(marker);
+    } catch (_error) {
+      // Ignore per-location geocoding failures and continue rendering remaining markers.
+    }
+  }
+
+  if (markers.length === 0) {
+    statusEl.textContent = "Location values exist, but coordinates could not be resolved.";
+    return;
+  }
+
+  const group = L.featureGroup(markers);
+  map.fitBounds(group.getBounds().pad(0.3));
+  statusEl.textContent = `Showing ${markers.length} mapped location${markers.length === 1 ? "" : "s"}.`;
+}
+
 async function bootstrap() {
   const res = await fetch("./data/reports.json", { cache: "no-store" });
   if (!res.ok) {
@@ -146,6 +241,7 @@ async function bootstrap() {
   renderSummary(data.summary, data.reportCount);
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);
+  await renderLocationMap(data.reports);
   renderTable(data.reports);
 }
 
