@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-24T23:30:12.910Z",
+  "generatedAt": "2026-03-24T23:40:38.431Z",
   "reportCount": 29,
   "summary": {
     "totals": {
@@ -396,7 +396,13 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
-      "location": null,
+      "location": {
+        "name": "",
+        "addressCountry": "Belgium",
+        "addressRegion": "",
+        "addressLocality": "",
+        "postalCode": ""
+      },
       "startTime": "2025-12-30T09:18:18.760779",
       "endTime": "2025-12-30T09:19:44.368574",
       "startDay": "2025-12-30",

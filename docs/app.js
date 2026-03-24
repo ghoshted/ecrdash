@@ -136,6 +136,11 @@ function renderTable(reports) {
 
 function locationQuery(location) {
   if (!location) return "";
+
+  if (location.addressCountry) {
+    return location.addressCountry;
+  }
+
   return [
     location.name,
     location.addressLocality,
@@ -179,9 +184,17 @@ async function geocode(query) {
 
 async function renderLocationMap(reports) {
   const statusEl = document.getElementById("locationMapStatus");
+  const europeBounds = L.latLngBounds(
+    [32, -11],
+    [67, 32]
+  );
   const map = L.map("locationMap", {
     zoomControl: true,
-  }).setView([20, 0], 2);
+    maxBounds: europeBounds.pad(0.08),
+    maxBoundsViscosity: 1,
+  });
+  map.fitBounds(europeBounds);
+  map.setZoom(map.getZoom() + 1);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
@@ -224,8 +237,6 @@ async function renderLocationMap(reports) {
     return;
   }
 
-  const group = L.featureGroup(markers);
-  map.fitBounds(group.getBounds().pad(0.3));
   statusEl.textContent = `Showing ${markers.length} mapped location${markers.length === 1 ? "" : "s"}.`;
 }
 
