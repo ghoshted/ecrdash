@@ -218,7 +218,12 @@ function card(label, value) {
 function renderSummary(summary, count) {
   const cardsHost = document.getElementById("summaryCards");
   cardsHost.innerHTML = "";
-  document.getElementById("totalReportsBadge").textContent = `Reports: ${count}`;
+  const badgeCount = document.getElementById("totalReportsCount");
+  if (badgeCount) {
+    badgeCount.textContent = String(count);
+  } else {
+    document.getElementById("totalReportsBadge").textContent = `Report processed: ${count}`;
+  }
 
   cardsHost.append(
     card("Total Runtime", formatDuration(summary.totals.durationSeconds)),
