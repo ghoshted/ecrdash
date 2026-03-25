@@ -93,6 +93,7 @@ function summarize(reports) {
   const byToolMap = new Map();
   const byDayMap = new Map();
   const byCountryMap = new Map();
+  const byInfraMap = new Map();
 
   for (const report of reports) {
     totals.inputBytes += report.inputSizeBytes;
@@ -137,11 +138,23 @@ function summarize(reports) {
       countryEntry.count += 1;
       byCountryMap.set(country, countryEntry);
     }
+
+    for (const infraName of report.infra) {
+      const infraEntry = byInfraMap.get(infraName) ?? {
+        name: infraName,
+        count: 0,
+        totalDurationSeconds: 0,
+      };
+      infraEntry.count += 1;
+      infraEntry.totalDurationSeconds += report.durationSeconds;
+      byInfraMap.set(infraName, infraEntry);
+    }
   }
 
   const byTool = [...byToolMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   const byDay = [...byDayMap.values()].sort((a, b) => a.day.localeCompare(b.day));
   const byCountry = [...byCountryMap.values()].sort((a, b) => b.count - a.count || a.country.localeCompare(b.country));
+  const byInfra = [...byInfraMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
   return {
     totals,
@@ -154,6 +167,7 @@ function summarize(reports) {
     byTool,
     byDay,
     byCountry,
+    byInfra,
   };
 }
 

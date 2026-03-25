@@ -108,6 +108,48 @@ function renderRuntimeTrend(summary) {
   });
 }
 
+function renderInfraChart(summary, reports) {
+  let infraData = Array.isArray(summary.byInfra) ? summary.byInfra : [];
+
+  if (infraData.length === 0) {
+    const byInfraMap = new Map();
+    for (const report of reports) {
+      for (const infraName of report.infra || []) {
+        const entry = byInfraMap.get(infraName) ?? { name: infraName, count: 0 };
+        entry.count += 1;
+        byInfraMap.set(infraName, entry);
+      }
+    }
+    infraData = [...byInfraMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }
+
+  const labels = infraData.map((x) => x.name);
+  const data = infraData.map((x) => x.count);
+
+  new Chart(document.getElementById("infraChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Runs",
+          data,
+          borderRadius: 1,
+          backgroundColor: "rgba(34, 139, 34, 0.78)",
+          borderColor: "rgba(34, 139, 34, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 } },
+      },
+    },
+  });
+}
+
 function renderTable(reports) {
   if (!Array.isArray(reports) || reports.length === 0) {
     const body = document.getElementById("reportsTableBody");
@@ -406,6 +448,7 @@ async function bootstrap() {
   renderSummary(data.summary, data.reportCount);
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);
+  renderInfraChart(data.summary, data.reports);
   await renderLocationMap(data.summary.byCountry || []);
   setupTableControls(data.reports);
   renderTable(data.reports);
