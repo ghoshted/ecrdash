@@ -29,6 +29,185 @@ function formatDate(isoTime) {
   return d.toLocaleString();
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatValue(value, key = "") {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  if (key.toLowerCase().includes("time")) {
+    return formatDate(value);
+  }
+
+  if (key.toLowerCase().includes("bytes")) {
+    return `${formatBytes(value)} (${Number(value) || 0} B)`;
+  }
+
+  if (key === "durationSeconds") {
+    return `${formatDuration(value)} (${Number(value) || 0}s)`;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length ? value.join(", ") : "-";
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value, null, 2);
+  }
+
+  return String(value);
+}
+
+function detailList(entries) {
+  const filtered = entries.filter(([, value]) => value !== undefined);
+  if (filtered.length === 0) {
+    return '<p class="hint">No data available.</p>';
+  }
+
+  return `<dl class="report-detail-list">${filtered
+    .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`)
+    .join("")}</dl>`;
+}
+
+function renderChipList(values) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return '<p class="hint">No data available.</p>';
+  }
+
+  return `<div class="report-chip-list">${values
+    .map((value) => `<span class="report-chip">${escapeHtml(value)}</span>`)
+    .join("")}</div>`;
+}
+
+function renderReportModal(report) {
+  const modal = document.getElementById("reportModal");
+  const title = document.getElementById("reportModalTitle");
+  const eyebrow = document.getElementById("reportModalEyebrow");
+  const content = document.getElementById("reportModalContent");
+
+  const infraNames = Array.isArray(report.infra) && report.infra.length ? report.infra.join(", ") : "-";
+  const location = report.location || null;
+  const locationLines = location
+    ? [location.name, location.addressLocality, location.addressRegion, location.postalCode, location.addressCountry].filter(Boolean)
+    : [];
+
+  eyebrow.textContent = report.fileName || "Report details";
+  title.textContent = report.toolName || "Selected report";
+
+  content.innerHTML = `
+    <div class="report-detail-grid">
+      <section class="report-detail-card">
+        <h3>Run Overview</h3>
+        ${detailList([
+          ["Start Time", formatValue(report.startTime, "startTime")],
+          ["End Time", formatValue(report.endTime, "endTime")],
+          ["Duration", formatValue(report.durationSeconds, "durationSeconds")],
+          ["Recorded Day", formatValue(report.startDay)],
+          ["Tool", formatValue(report.toolName)],
+          ["Infra", infraNames],
+        ])}
+      </section>
+      <section class="report-detail-card">
+        <h3>Resources</h3>
+        ${detailList([
+          ["CPU", `${formatValue(report.cpuCoresUsed)} / ${formatValue(report.cpuCoresAssigned)}`],
+          ["GPU", formatValue(report.gpuCoresUsed)],
+          ["Memory (MB)", formatValue(report.memoryUsedMb)],
+          ["Input", formatValue(report.inputSizeBytes, "inputSizeBytes")],
+          ["Output", formatValue(report.outputSizeBytes, "outputSizeBytes")],
+        ])}
+      </section>
+      <section class="report-detail-card">
+        <h3>Tool Metadata</h3>
+        ${detailList([
+          ["Tool Name", formatValue(report.toolName)],
+          ["Tool Version", formatValue(report.toolVersion)],
+          ["Package Version", formatValue(report.packageVersion)],
+          ["Report File", formatValue(report.fileName)],
+        ])}
+      </section>
+      <section class="report-detail-card">
+        <h3>Location</h3>
+        <div class="report-detail-stack">
+          ${detailList([
+            ["Place Name", formatValue(location?.name)],
+            ["Country", formatValue(location?.addressCountry)],
+            ["Region", formatValue(location?.addressRegion)],
+            ["Locality", formatValue(location?.addressLocality)],
+            ["Postal Code", formatValue(location?.postalCode)],
+          ])}
+          <p class="hint">${escapeHtml(locationLines.length ? locationLines.join(", ") : "No location metadata recorded.")}</p>
+        </div>
+      </section>
+      <section class="report-detail-card report-detail-card--full">
+        <h3>Infrastructure</h3>
+        ${renderChipList(report.infra)}
+      </section>
+      <section class="report-detail-card report-detail-card--full">
+        <h3>Data Footprint</h3>
+        ${detailList([
+          ["Input Size", formatValue(report.inputSizeBytes, "inputSizeBytes")],
+          ["Output Size", formatValue(report.outputSizeBytes, "outputSizeBytes")],
+          ["Memory Used", `${formatValue(report.memoryUsedMb)} MB`],
+          ["CPU Used / Assigned", `${formatValue(report.cpuCoresUsed)} / ${formatValue(report.cpuCoresAssigned)}`],
+          ["GPU Used", formatValue(report.gpuCoresUsed)],
+        ])}
+      </section>
+      <section class="report-detail-card report-detail-card--full">
+        <h3>Identifiers</h3>
+        ${detailList([
+          ["Report File", formatValue(report.fileName)],
+          ["Tool Version", formatValue(report.toolVersion)],
+          ["Package Version", formatValue(report.packageVersion)],
+          ["Start Day", formatValue(report.startDay)],
+        ])}
+      </section>
+    </div>
+  `;
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "open");
+  }
+}
+
+function closeReportModal() {
+  const modal = document.getElementById("reportModal");
+  if (modal.open && typeof modal.close === "function") {
+    modal.close();
+    return;
+  }
+  modal.removeAttribute("open");
+}
+
+function setupReportModal() {
+  const modal = document.getElementById("reportModal");
+  const closeBtn = document.getElementById("closeReportModalBtn");
+
+  closeBtn.addEventListener("click", closeReportModal);
+  modal.addEventListener("click", (event) => {
+    const rect = modal.getBoundingClientRect();
+    const clickedBackdrop =
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom;
+
+    if (clickedBackdrop) {
+      closeReportModal();
+    }
+  });
+}
+
 function card(label, value) {
   const el = document.createElement("article");
   el.className = "card";
@@ -39,9 +218,9 @@ function card(label, value) {
 function renderSummary(summary, count) {
   const cardsHost = document.getElementById("summaryCards");
   cardsHost.innerHTML = "";
+  document.getElementById("totalReportsBadge").textContent = `Reports: ${count}`;
 
   cardsHost.append(
-    card("Total Reports", `${count}`),
     card("Total Runtime", formatDuration(summary.totals.durationSeconds)),
     card("Total Input", formatBytes(summary.totals.inputBytes)),
     card("Total Output", formatBytes(summary.totals.outputBytes)),
@@ -264,18 +443,19 @@ function renderTable(reports) {
   body.innerHTML = "";
 
   for (const report of pageRows) {
-    const infraNames = Array.isArray(report.infra) && report.infra.length ? report.infra.join(", ") : "-";
     const tr = document.createElement("tr");
+    tr.className = "report-row";
     tr.innerHTML = `
       <td>${formatDate(report.startTime)}</td>
       <td>${report.toolName}</td>
-      <td>${infraNames}</td>
+      <td><button type="button" class="details-button" aria-label="Open details for ${escapeHtml(report.toolName || "report")} run at ${escapeHtml(formatDate(report.startTime))}">Details</button></td>
       <td>${formatDuration(report.durationSeconds)}</td>
       <td>${formatBytes(report.inputSizeBytes)}</td>
       <td>${formatBytes(report.outputSizeBytes)}</td>
       <td>${report.cpuCoresUsed}/${report.cpuCoresAssigned}</td>
       <td>${report.gpuCoresUsed}</td>
     `;
+    tr.querySelector(".details-button")?.addEventListener("click", () => renderReportModal(report));
     body.appendChild(tr);
   }
 
@@ -511,6 +691,7 @@ async function bootstrap() {
   const data = await res.json();
 
   document.getElementById("generatedAt").textContent = formatDate(data.generatedAt);
+  setupReportModal();
   renderSummary(data.summary, data.reportCount);
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);

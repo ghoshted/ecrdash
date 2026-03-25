@@ -29,7 +29,10 @@
     <main class="layout">
       <header class="hero">
         <p class="eyebrow">ECRDash</p>
-        <h1>Compute Reports Dashboard</h1>
+        <div class="hero-title-row">
+          <h1>Compute Reports Dashboard</h1>
+          <span id="totalReportsBadge" class="hero-badge">Reports: --</span>
+        </div>
         <p class="subtitle">A dashboard generated from execution reports from computing infrastructure.</p>
         <p class="meta">Last generated: <span id="generatedAt">loading...</span></p>
       </header>
@@ -78,7 +81,7 @@
               <tr>
                 <th data-sort-key="startTime" class="sortable">Start Time</th>
                 <th data-sort-key="toolName" class="sortable">Tool</th>
-                <th data-sort-key="infra" class="sortable">Infra Name</th>
+                <th>Details</th>
                 <th data-sort-key="durationSeconds" class="sortable">Duration</th>
                 <th data-sort-key="inputSizeBytes" class="sortable">Input</th>
                 <th data-sort-key="outputSizeBytes" class="sortable">Output</th>
@@ -106,5 +109,16 @@
         </div>
       </section>
     </main>
+
+    <dialog id="reportModal" class="report-modal" aria-labelledby="reportModalTitle">
+      <div class="report-modal__header">
+        <div>
+          <p id="reportModalEyebrow" class="eyebrow">Report details</p>
+          <h2 id="reportModalTitle">Selected report</h2>
+        </div>
+        <button id="closeReportModalBtn" type="button" class="report-modal__close" aria-label="Close report details">Close</button>
+      </div>
+      <div id="reportModalContent" class="report-modal__content"></div>
+    </dialog>
   </body>
 </html>
