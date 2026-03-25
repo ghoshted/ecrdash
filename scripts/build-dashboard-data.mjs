@@ -92,6 +92,7 @@ function summarize(reports) {
 
   const byToolMap = new Map();
   const byDayMap = new Map();
+  const byDayToolMemoryMap = new Map();
   const byCountryMap = new Map();
   const byInfraMap = new Map();
 
@@ -127,6 +128,11 @@ function summarize(reports) {
       dayEntry.count += 1;
       dayEntry.durationSeconds += report.durationSeconds;
       byDayMap.set(day, dayEntry);
+
+      const byToolForDay = byDayToolMemoryMap.get(day) ?? new Map();
+      const currentMemory = byToolForDay.get(report.toolName) ?? 0;
+      byToolForDay.set(report.toolName, currentMemory + report.memoryUsedMb);
+      byDayToolMemoryMap.set(day, byToolForDay);
     }
 
     const country = report.location?.addressCountry || "";
@@ -153,6 +159,14 @@ function summarize(reports) {
 
   const byTool = [...byToolMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   const byDay = [...byDayMap.values()].sort((a, b) => a.day.localeCompare(b.day));
+  const byDayToolMemory = [...byDayToolMemoryMap.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([day, toolMap]) => ({
+      day,
+      tools: [...toolMap.entries()]
+        .map(([name, memoryMb]) => ({ name, memoryMb }))
+        .sort((a, b) => b.memoryMb - a.memoryMb || a.name.localeCompare(b.name)),
+    }));
   const byCountry = [...byCountryMap.values()].sort((a, b) => b.count - a.count || a.country.localeCompare(b.country));
   const byInfra = [...byInfraMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 
@@ -166,6 +180,7 @@ function summarize(reports) {
     },
     byTool,
     byDay,
+    byDayToolMemory,
     byCountry,
     byInfra,
   };

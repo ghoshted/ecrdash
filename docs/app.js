@@ -150,6 +150,72 @@ function renderInfraChart(summary, reports) {
   });
 }
 
+function colorForTool(index, total) {
+  const hue = Math.round((index * 360) / Math.max(total, 1));
+  return {
+    border: `hsl(${hue} 62% 38%)`,
+    fill: `hsl(${hue} 62% 58% / 0.78)`,
+  };
+}
+
+function renderMemoryByToolDayChart(summary) {
+  const byDayToolMemory = Array.isArray(summary.byDayToolMemory) ? summary.byDayToolMemory : [];
+  if (byDayToolMemory.length === 0) {
+    return;
+  }
+
+  const labels = byDayToolMemory.map((entry) => entry.day);
+  const toolNames = [...new Set(byDayToolMemory.flatMap((entry) => (entry.tools || []).map((tool) => tool.name)))];
+  const memoryByDay = new Map(
+    byDayToolMemory.map((entry) => [
+      entry.day,
+      new Map((entry.tools || []).map((tool) => [tool.name, Number(tool.memoryMb) || 0])),
+    ])
+  );
+
+  const datasets = toolNames.map((toolName, index) => {
+    const color = colorForTool(index, toolNames.length);
+    return {
+      label: toolName,
+      data: labels.map((day) => memoryByDay.get(day)?.get(toolName) ?? 0),
+      borderColor: color.border,
+      backgroundColor: color.fill,
+      borderWidth: 1,
+      stack: "memory",
+    };
+  });
+
+  new Chart(document.getElementById("memoryByToolDayChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets,
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            boxWidth: 12,
+            boxHeight: 12,
+          },
+        },
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Memory (MB)",
+          },
+        },
+      },
+    },
+  });
+}
+
 function renderTable(reports) {
   if (!Array.isArray(reports) || reports.length === 0) {
     const body = document.getElementById("reportsTableBody");
@@ -449,6 +515,7 @@ async function bootstrap() {
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);
   renderInfraChart(data.summary, data.reports);
+  renderMemoryByToolDayChart(data.summary);
   await renderLocationMap(data.summary.byCountry || []);
   setupTableControls(data.reports);
   renderTable(data.reports);

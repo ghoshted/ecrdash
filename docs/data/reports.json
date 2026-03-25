@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-25T11:36:19.997Z",
+  "generatedAt": "2026-03-25T11:41:17.630Z",
   "reportCount": 29,
   "summary": {
     "totals": {
@@ -206,6 +206,125 @@
         "day": "2025-12-31",
         "count": 14,
         "durationSeconds": 563
+      }
+    ],
+    "byDayToolMemory": [
+      {
+        "day": "2025-12-24",
+        "tools": [
+          {
+            "name": "Alphafold 2",
+            "memoryMb": 49152
+          }
+        ]
+      },
+      {
+        "day": "2025-12-26",
+        "tools": [
+          {
+            "name": "FastQC",
+            "memoryMb": 28670
+          }
+        ]
+      },
+      {
+        "day": "2025-12-29",
+        "tools": [
+          {
+            "name": "Protein Calculator",
+            "memoryMb": 3891
+          }
+        ]
+      },
+      {
+        "day": "2025-12-30",
+        "tools": [
+          {
+            "name": "InterProScan",
+            "memoryMb": 81920
+          },
+          {
+            "name": "Funannotate assembly clean",
+            "memoryMb": 40960
+          },
+          {
+            "name": "Augustus",
+            "memoryMb": 30720
+          },
+          {
+            "name": "Shasta",
+            "memoryMb": 12288
+          },
+          {
+            "name": "Convert BED to GFF",
+            "memoryMb": 7782
+          },
+          {
+            "name": "hmmconvert",
+            "memoryMb": 3891
+          }
+        ]
+      },
+      {
+        "day": "2025-12-31",
+        "tools": [
+          {
+            "name": "VarDict",
+            "memoryMb": 64512
+          },
+          {
+            "name": "Bismark Mapper",
+            "memoryMb": 30720
+          },
+          {
+            "name": "Naive Variant Caller (NVC)",
+            "memoryMb": 20480
+          },
+          {
+            "name": "Lofreq filter",
+            "memoryMb": 15564
+          },
+          {
+            "name": "SnpEff eff:",
+            "memoryMb": 12288
+          },
+          {
+            "name": "bcftools norm",
+            "memoryMb": 8192
+          },
+          {
+            "name": "fastp",
+            "memoryMb": 8192
+          },
+          {
+            "name": "bcftools consensus",
+            "memoryMb": 3891
+          },
+          {
+            "name": "Bismark Pretty Report",
+            "memoryMb": 3891
+          },
+          {
+            "name": "Convert GFF to BED",
+            "memoryMb": 3891
+          },
+          {
+            "name": "cuteSV",
+            "memoryMb": 3891
+          },
+          {
+            "name": "Iris",
+            "memoryMb": 3891
+          },
+          {
+            "name": "JasmineSV",
+            "memoryMb": 3891
+          },
+          {
+            "name": "VCFsort:",
+            "memoryMb": 3891
+          }
+        ]
       }
     ],
     "byCountry": [
