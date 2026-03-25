@@ -134,22 +134,57 @@ function renderTable(reports) {
   }
 }
 
-function locationQuery(location) {
-  if (!location) return "";
+const COUNTRY_COORDS = {
+  albania: [41.1533, 20.1683],
+  andorra: [42.5063, 1.5218],
+  austria: [47.5162, 14.5501],
+  belgium: [50.5039, 4.4699],
+  bosniaandherzegovina: [43.9159, 17.6791],
+  bulgaria: [42.7339, 25.4858],
+  croatia: [45.1, 15.2],
+  cyprus: [35.1264, 33.4299],
+  czechrepublic: [49.8175, 15.473],
+  czechia: [49.8175, 15.473],
+  denmark: [56.2639, 9.5018],
+  estonia: [58.5953, 25.0136],
+  finland: [61.9241, 25.7482],
+  france: [46.2276, 2.2137],
+  germany: [51.1657, 10.4515],
+  greece: [39.0742, 21.8243],
+  hungary: [47.1625, 19.5033],
+  iceland: [64.9631, -19.0208],
+  ireland: [53.1424, -7.6921],
+  italy: [41.8719, 12.5674],
+  latvia: [56.8796, 24.6032],
+  liechtenstein: [47.166, 9.5554],
+  lithuania: [55.1694, 23.8813],
+  luxembourg: [49.8153, 6.1296],
+  malta: [35.9375, 14.3754],
+  moldova: [47.4116, 28.3699],
+  montenegro: [42.7087, 19.3744],
+  netherlands: [52.1326, 5.2913],
+  northmacedonia: [41.6086, 21.7453],
+  norway: [60.472, 8.4689],
+  poland: [51.9194, 19.1451],
+  portugal: [39.3999, -8.2245],
+  romania: [45.9432, 24.9668],
+  serbia: [44.0165, 21.0059],
+  slovakia: [48.669, 19.699],
+  slovenia: [46.1512, 14.9955],
+  spain: [40.4637, -3.7492],
+  sweden: [60.1282, 18.6435],
+  switzerland: [46.8182, 8.2275],
+  ukraine: [48.3794, 31.1656],
+  unitedkingdom: [55.3781, -3.436],
+};
 
-  if (location.addressCountry) {
-    return location.addressCountry;
-  }
+function normalizeCountryKey(country) {
+  return String(country || "").toLowerCase().replace(/[^a-z]/g, "");
+}
 
-  return [
-    location.name,
-    location.addressLocality,
-    location.addressRegion,
-    location.postalCode,
-    location.addressCountry,
-  ]
-    .filter(Boolean)
-    .join(", ");
+function countryCoordinate(country) {
+  const key = normalizeCountryKey(country);
+  return COUNTRY_COORDS[key] ?? null;
 }
 
 async function geocode(query) {
@@ -182,7 +217,7 @@ async function geocode(query) {
   };
 }
 
-async function renderLocationMap(reports) {
+async function renderLocationMap(byCountry) {
   const statusEl = document.getElementById("locationMapStatus");
   const europeBounds = L.latLngBounds(
     [32, -11],
@@ -201,34 +236,40 @@ async function renderLocationMap(reports) {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
-  const locationCounts = new Map();
-  for (const report of reports) {
-    const query = locationQuery(report.location);
-    if (!query) continue;
-    const current = locationCounts.get(query) ?? 0;
-    locationCounts.set(query, current + 1);
-  }
-
-  const queries = [...locationCounts.keys()];
-  if (queries.length === 0) {
+  if (!Array.isArray(byCountry) || byCountry.length === 0) {
     statusEl.textContent = "No populated location fields were found in reports.";
     return;
   }
 
-  statusEl.textContent = "Resolving location coordinates...";
+  statusEl.textContent = "Resolving country locations...";
 
   const markers = [];
-  for (const query of queries) {
-    try {
-      const result = await geocode(query);
-      if (!result) continue;
+  const unresolved = [];
 
-      const count = locationCounts.get(query) ?? 0;
+  for (const entry of byCountry) {
+    const country = entry.country;
+    const count = entry.count ?? 0;
+
+    const known = countryCoordinate(country);
+    if (known) {
+      const marker = L.marker(known).addTo(map);
+      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}`);
+      markers.push(marker);
+      continue;
+    }
+
+    try {
+      const result = await geocode(country);
+      if (!result) {
+        unresolved.push(country);
+        continue;
+      }
+
       const marker = L.marker([result.lat, result.lon]).addTo(map);
-      marker.bindPopup(`<strong>${query}</strong><br/>Reports: ${count}<br/>${result.displayName}`);
+      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}<br/>${result.displayName}`);
       markers.push(marker);
     } catch (_error) {
-      // Ignore per-location geocoding failures and continue rendering remaining markers.
+      unresolved.push(country);
     }
   }
 
@@ -237,7 +278,12 @@ async function renderLocationMap(reports) {
     return;
   }
 
-  statusEl.textContent = `Showing ${markers.length} mapped location${markers.length === 1 ? "" : "s"}.`;
+  if (unresolved.length > 0) {
+    statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}. Unresolved: ${unresolved.join(", ")}.`;
+    return;
+  }
+
+  statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}.`;
 }
 
 async function bootstrap() {
@@ -252,7 +298,7 @@ async function bootstrap() {
   renderSummary(data.summary, data.reportCount);
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);
-  await renderLocationMap(data.reports);
+  await renderLocationMap(data.summary.byCountry || []);
   renderTable(data.reports);
 }
 

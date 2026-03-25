@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-24T23:40:38.431Z",
+  "generatedAt": "2026-03-25T00:01:14.827Z",
   "reportCount": 29,
   "summary": {
     "totals": {
@@ -207,6 +207,16 @@
         "count": 14,
         "durationSeconds": 563
       }
+    ],
+    "byCountry": [
+      {
+        "country": "Germany",
+        "count": 1
+      },
+      {
+        "country": "Spain",
+        "count": 1
+      }
     ]
   },
   "reports": [
@@ -398,7 +408,7 @@
       ],
       "location": {
         "name": "",
-        "addressCountry": "Belgium",
+        "addressCountry": "Germany",
         "addressRegion": "",
         "addressLocality": "",
         "postalCode": ""
@@ -732,7 +742,13 @@
         "HTCondor",
         "https://usegalaxy.be"
       ],
-      "location": null,
+      "location": {
+        "name": "",
+        "addressCountry": "Spain",
+        "addressRegion": "",
+        "addressLocality": "",
+        "postalCode": ""
+      },
       "startTime": "2025-12-31T10:31:31.212524",
       "endTime": "2025-12-31T10:31:55.794593",
       "startDay": "2025-12-31",

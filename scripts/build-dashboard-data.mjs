@@ -92,6 +92,7 @@ function summarize(reports) {
 
   const byToolMap = new Map();
   const byDayMap = new Map();
+  const byCountryMap = new Map();
 
   for (const report of reports) {
     totals.inputBytes += report.inputSizeBytes;
@@ -126,10 +127,21 @@ function summarize(reports) {
       dayEntry.durationSeconds += report.durationSeconds;
       byDayMap.set(day, dayEntry);
     }
+
+    const country = report.location?.addressCountry || "";
+    if (country) {
+      const countryEntry = byCountryMap.get(country) ?? {
+        country,
+        count: 0,
+      };
+      countryEntry.count += 1;
+      byCountryMap.set(country, countryEntry);
+    }
   }
 
   const byTool = [...byToolMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   const byDay = [...byDayMap.values()].sort((a, b) => a.day.localeCompare(b.day));
+  const byCountry = [...byCountryMap.values()].sort((a, b) => b.count - a.count || a.country.localeCompare(b.country));
 
   return {
     totals,
@@ -141,6 +153,7 @@ function summarize(reports) {
     },
     byTool,
     byDay,
+    byCountry,
   };
 }
 
