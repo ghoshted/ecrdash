@@ -62,7 +62,7 @@ function renderToolChart(summary) {
         {
           label: "Runs",
           data,
-          borderRadius: 8,
+          borderRadius: 1,
           backgroundColor: "rgba(216, 90, 52, 0.8)",
           borderColor: "rgba(216, 90, 52, 1)",
           borderWidth: 1,
