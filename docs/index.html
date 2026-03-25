@@ -66,17 +66,33 @@
           <table>
             <thead>
               <tr>
-                <th>Start Time</th>
-                <th>Tool</th>
-                <th>Duration</th>
-                <th>Input</th>
-                <th>Output</th>
-                <th>CPU</th>
-                <th>GPU</th>
+                <th data-sort-key="startTime" class="sortable">Start Time</th>
+                <th data-sort-key="toolName" class="sortable">Tool</th>
+                <th data-sort-key="infra" class="sortable">Infra Name</th>
+                <th data-sort-key="durationSeconds" class="sortable">Duration</th>
+                <th data-sort-key="inputSizeBytes" class="sortable">Input</th>
+                <th data-sort-key="outputSizeBytes" class="sortable">Output</th>
+                <th data-sort-key="cpu" class="sortable">CPU</th>
+                <th data-sort-key="gpuCoresUsed" class="sortable">GPU</th>
               </tr>
             </thead>
             <tbody id="reportsTableBody"></tbody>
           </table>
+        </div>
+        <div class="table-controls">
+          <p id="tableMeta" class="hint"></p>
+          <div class="table-controls-right">
+            <label for="pageSizeSelect" class="hint">Rows</label>
+            <select id="pageSizeSelect">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            <button id="prevPageBtn" type="button">Prev</button>
+            <span id="pageIndicator" class="hint"></span>
+            <button id="nextPageBtn" type="button">Next</button>
+          </div>
         </div>
       </section>
     </main>

@@ -109,21 +109,59 @@ function renderRuntimeTrend(summary) {
 }
 
 function renderTable(reports) {
+  if (!Array.isArray(reports) || reports.length === 0) {
+    const body = document.getElementById("reportsTableBody");
+    body.innerHTML = "";
+    document.getElementById("tableMeta").textContent = "No report entries available.";
+    document.getElementById("pageIndicator").textContent = "Page 0 / 0";
+    return;
+  }
+
+  const sortValue = (report, key) => {
+    if (key === "startTime") return report.startTime || "";
+    if (key === "toolName") return report.toolName || "";
+    if (key === "infra") return Array.isArray(report.infra) ? report.infra.join(", ") : "";
+    if (key === "durationSeconds") return Number(report.durationSeconds) || 0;
+    if (key === "inputSizeBytes") return Number(report.inputSizeBytes) || 0;
+    if (key === "outputSizeBytes") return Number(report.outputSizeBytes) || 0;
+    if (key === "cpu") {
+      const used = Number(report.cpuCoresUsed) || 0;
+      const assigned = Number(report.cpuCoresAssigned) || 0;
+      return used * 1000 + assigned;
+    }
+    if (key === "gpuCoresUsed") return Number(report.gpuCoresUsed) || 0;
+    return "";
+  };
+
+  const compare = (a, b, key, direction) => {
+    const va = sortValue(a, key);
+    const vb = sortValue(b, key);
+    const base = typeof va === "number" && typeof vb === "number"
+      ? va - vb
+      : String(va).localeCompare(String(vb));
+    return direction === "asc" ? base : -base;
+  };
+
+  const sorted = [...reports].sort((a, b) => compare(a, b, tableState.sortKey, tableState.sortDir));
+  const total = sorted.length;
+  const pageSize = tableState.pageSize;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  tableState.page = Math.min(Math.max(tableState.page, 1), totalPages);
+
+  const startIndex = (tableState.page - 1) * pageSize;
+  const endIndexExclusive = Math.min(startIndex + pageSize, total);
+  const pageRows = sorted.slice(startIndex, endIndexExclusive);
+
   const body = document.getElementById("reportsTableBody");
   body.innerHTML = "";
 
-  const sorted = [...reports].sort((a, b) => {
-    if (!a.startTime && !b.startTime) return 0;
-    if (!a.startTime) return 1;
-    if (!b.startTime) return -1;
-    return b.startTime.localeCompare(a.startTime);
-  });
-
-  for (const report of sorted.slice(0, 50)) {
+  for (const report of pageRows) {
+    const infraNames = Array.isArray(report.infra) && report.infra.length ? report.infra.join(", ") : "-";
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${formatDate(report.startTime)}</td>
       <td>${report.toolName}</td>
+      <td>${infraNames}</td>
       <td>${formatDuration(report.durationSeconds)}</td>
       <td>${formatBytes(report.inputSizeBytes)}</td>
       <td>${formatBytes(report.outputSizeBytes)}</td>
@@ -132,6 +170,76 @@ function renderTable(reports) {
     `;
     body.appendChild(tr);
   }
+
+  const tableMeta = document.getElementById("tableMeta");
+  tableMeta.textContent = `Showing ${startIndex + 1}-${endIndexExclusive} of ${total}`;
+
+  const pageIndicator = document.getElementById("pageIndicator");
+  pageIndicator.textContent = `Page ${tableState.page} / ${totalPages}`;
+
+  const prevBtn = document.getElementById("prevPageBtn");
+  const nextBtn = document.getElementById("nextPageBtn");
+  prevBtn.disabled = tableState.page <= 1;
+  nextBtn.disabled = tableState.page >= totalPages;
+
+  const headers = document.querySelectorAll("th.sortable");
+  for (const th of headers) {
+    const key = th.dataset.sortKey;
+    if (key === tableState.sortKey) {
+      th.classList.add("sorted");
+      th.textContent = `${th.dataset.label || th.textContent.replace(/\s[↑↓]$/, "")} ${tableState.sortDir === "asc" ? "↑" : "↓"}`;
+    } else {
+      th.classList.remove("sorted");
+      th.textContent = th.dataset.label || th.textContent.replace(/\s[↑↓]$/, "");
+    }
+  }
+}
+
+const tableState = {
+  sortKey: "startTime",
+  sortDir: "desc",
+  page: 1,
+  pageSize: 25,
+};
+
+function setupTableControls(reports) {
+  const headers = document.querySelectorAll("th.sortable");
+  for (const th of headers) {
+    if (!th.dataset.label) {
+      th.dataset.label = th.textContent;
+    }
+
+    th.addEventListener("click", () => {
+      const key = th.dataset.sortKey;
+      if (!key) return;
+
+      if (tableState.sortKey === key) {
+        tableState.sortDir = tableState.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        tableState.sortKey = key;
+        tableState.sortDir = "asc";
+      }
+      tableState.page = 1;
+      renderTable(reports);
+    });
+  }
+
+  const pageSizeSelect = document.getElementById("pageSizeSelect");
+  pageSizeSelect.addEventListener("change", () => {
+    tableState.pageSize = Number(pageSizeSelect.value) || 25;
+    tableState.page = 1;
+    renderTable(reports);
+  });
+
+  document.getElementById("prevPageBtn").addEventListener("click", () => {
+    tableState.page -= 1;
+    renderTable(reports);
+  });
+
+  document.getElementById("nextPageBtn").addEventListener("click", () => {
+    tableState.page += 1;
+    renderTable(reports);
+  });
 }
 
 const COUNTRY_COORDS = {
@@ -299,6 +407,7 @@ async function bootstrap() {
   renderToolChart(data.summary);
   renderRuntimeTrend(data.summary);
   await renderLocationMap(data.summary.byCountry || []);
+  setupTableControls(data.reports);
   renderTable(data.reports);
 }
 
