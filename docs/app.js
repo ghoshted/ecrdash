@@ -38,17 +38,6 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function slugifyToolName(value) {
-  const normalized = String(value ?? "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return normalized || "tool";
-}
-
 function formatValue(value, key = "") {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -105,6 +94,9 @@ const appState = {
   selectedTool: null,
   charts: {},
   locationMap: null,
+  locationMarkerLayer: null,
+  geocodeCache: new Map(),
+  geocodeInFlight: new Map(),
   renderVersion: 0,
 };
 
@@ -157,7 +149,7 @@ function applyToolFromRoute() {
     return;
   }
 
-  const exists = appState.allReports.some((report) => (report.toolSlug || slugifyToolName(report.toolName)) === routeTool);
+  const exists = appState.allReports.some((report) => report.toolSlug === routeTool);
   appState.selectedTool = exists ? routeTool : null;
 
   if (!exists) {
@@ -194,7 +186,7 @@ function summarizeReports(reports) {
 
     const toolEntry = byToolMap.get(report.toolName) ?? {
       name: report.toolName,
-      slug: report.toolSlug || slugifyToolName(report.toolName),
+      slug: report.toolSlug || null,
       count: 0,
       totalDurationSeconds: 0,
       totalInputBytes: 0,
@@ -270,7 +262,7 @@ function summarizeReports(reports) {
 
 function activeReports() {
   return appState.selectedTool
-    ? appState.allReports.filter((report) => (report.toolSlug || slugifyToolName(report.toolName)) === appState.selectedTool)
+    ? appState.allReports.filter((report) => report.toolSlug === appState.selectedTool)
     : appState.allReports;
 }
 
@@ -427,12 +419,12 @@ function renderSummary(summary, count) {
   );
 }
 
-function renderToolSidebar(summary, selectedTool, visibleCount, totalCount) {
+function renderToolSidebar(summary, selectedTool, totalCount) {
   const host = document.getElementById("toolSidebarList");
   const countEl = document.getElementById("toolSidebarCount");
   const clearBtn = document.getElementById("toolSidebarClearBtn");
   const tools = Array.isArray(summary.byTool) ? summary.byTool : [];
-  const selectedEntry = tools.find((tool) => (tool.slug || slugifyToolName(tool.name)) === selectedTool) ?? null;
+  const selectedEntry = tools.find((tool) => tool.slug === selectedTool) ?? null;
 
   host.innerHTML = "";
   countEl.textContent = selectedTool ? "Filter active" : `${tools.length} tools`;
@@ -474,7 +466,10 @@ function renderToolSidebar(summary, selectedTool, visibleCount, totalCount) {
   select.appendChild(allOption);
 
   for (const tool of tools) {
-    const toolSlug = tool.slug || slugifyToolName(tool.name);
+    const toolSlug = tool.slug;
+    if (!toolSlug) {
+      continue;
+    }
     const option = document.createElement("option");
     option.value = toolSlug;
     option.textContent = `${tool.name || "Unknown"} (${tool.count || 0})`;
@@ -910,10 +905,46 @@ async function geocode(query) {
   };
 }
 
-async function renderLocationMap(byCountry, renderVersion) {
-  const statusEl = document.getElementById("locationMapStatus");
-  appState.locationMap?.remove();
-  appState.locationMap = null;
+async function resolveCountryLocation(country) {
+  const known = countryCoordinate(country);
+  if (known) {
+    return {
+      lat: known[0],
+      lon: known[1],
+      displayName: country,
+    };
+  }
+
+  const cacheKey = normalizeCountryKey(country) || String(country || "").trim().toLowerCase();
+  if (appState.geocodeCache.has(cacheKey)) {
+    return appState.geocodeCache.get(cacheKey);
+  }
+
+  if (appState.geocodeInFlight.has(cacheKey)) {
+    return appState.geocodeInFlight.get(cacheKey);
+  }
+
+  const pending = geocode(country)
+    .then((result) => {
+      appState.geocodeCache.set(cacheKey, result);
+      return result;
+    })
+    .catch(() => {
+      appState.geocodeCache.set(cacheKey, null);
+      return null;
+    })
+    .finally(() => {
+      appState.geocodeInFlight.delete(cacheKey);
+    });
+
+  appState.geocodeInFlight.set(cacheKey, pending);
+  return pending;
+}
+
+function ensureLocationMap() {
+  if (appState.locationMap && appState.locationMarkerLayer) {
+    return;
+  }
 
   const europeBounds = L.latLngBounds(
     [32, -11],
@@ -924,16 +955,26 @@ async function renderLocationMap(byCountry, renderVersion) {
     maxBounds: europeBounds.pad(0.08),
     maxBoundsViscosity: 1,
   });
-  appState.locationMap = map;
+
   map.fitBounds(europeBounds);
   map.setZoom(map.getZoom() + 1);
-
-  const isStale = () => renderVersion !== appState.renderVersion;
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
+
+  appState.locationMap = map;
+  appState.locationMarkerLayer = L.layerGroup().addTo(map);
+}
+
+async function renderLocationMap(byCountry, renderVersion) {
+  const statusEl = document.getElementById("locationMapStatus");
+  ensureLocationMap();
+  const markerLayer = appState.locationMarkerLayer;
+  markerLayer.clearLayers();
+
+  const isStale = () => renderVersion !== appState.renderVersion;
 
   if (!Array.isArray(byCountry) || byCountry.length === 0) {
     statusEl.textContent = "No populated location fields were found in reports.";
@@ -942,61 +983,42 @@ async function renderLocationMap(byCountry, renderVersion) {
 
   statusEl.textContent = "Resolving country locations...";
 
-  const markers = [];
+  let markers = 0;
   const unresolved = [];
 
   for (const entry of byCountry) {
-    if (isStale()) {
-      map.remove();
-      return;
-    }
+    if (isStale()) return;
 
     const country = entry.country;
     const count = entry.count ?? 0;
 
-    const known = countryCoordinate(country);
-    if (known) {
-      const marker = L.marker(known).addTo(map);
-      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}`);
-      markers.push(marker);
+    const result = await resolveCountryLocation(country);
+    if (isStale()) return;
+
+    if (!result) {
+      unresolved.push(country);
       continue;
     }
 
-    try {
-      const result = await geocode(country);
-      if (isStale()) {
-        map.remove();
-        return;
-      }
-      if (!result) {
-        unresolved.push(country);
-        continue;
-      }
-
-      const marker = L.marker([result.lat, result.lon]).addTo(map);
-      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}<br/>${result.displayName}`);
-      markers.push(marker);
-    } catch (_error) {
-      unresolved.push(country);
-    }
+    const marker = L.marker([result.lat, result.lon]).addTo(markerLayer);
+    const details = result.displayName && result.displayName !== country ? `<br/>${result.displayName}` : "";
+    marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}${details}`);
+    markers += 1;
   }
 
-  if (isStale()) {
-    map.remove();
-    return;
-  }
+  if (isStale()) return;
 
-  if (markers.length === 0) {
+  if (markers === 0) {
     statusEl.textContent = "Location values exist, but coordinates could not be resolved.";
     return;
   }
 
   if (unresolved.length > 0) {
-    statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}. Unresolved: ${unresolved.join(", ")}.`;
+    statusEl.textContent = `Showing ${markers} mapped countr${markers === 1 ? "y" : "ies"}. Unresolved: ${unresolved.join(", ")}.`;
     return;
   }
 
-  statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}.`;
+  statusEl.textContent = `Showing ${markers} mapped countr${markers === 1 ? "y" : "ies"}.`;
 }
 
 async function bootstrap() {
@@ -1031,7 +1053,7 @@ async function renderDashboard() {
   appState.visibleReports = reports;
 
   renderSummary(summary, reports.length);
-  renderToolSidebar(appState.baseSummary || summary, appState.selectedTool, reports.length, appState.allReports.length);
+  renderToolSidebar(appState.baseSummary || summary, appState.selectedTool, appState.allReports.length);
   renderToolChart(summary);
   renderRuntimeTrend(summary);
   renderInfraChart(summary, reports);

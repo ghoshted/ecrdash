@@ -105,6 +105,14 @@ function normalizeLocation(location) {
   };
 }
 
+function replaceRequired(source, searchValue, replaceValue, description) {
+  const next = source.replace(searchValue, replaceValue);
+  if (next === source) {
+    throw new Error(`Could not update tool route HTML: missing ${description} in docs/index.html`);
+  }
+  return next;
+}
+
 function summarize(reports) {
   const totals = {
     reports: reports.length,
@@ -216,10 +224,24 @@ function summarize(reports) {
 
 async function writeToolRoutes(summary) {
   const sourceHtml = await fs.readFile(path.join(docsDir, "index.html"), "utf8");
-  const routeHtml = sourceHtml
-    .replace('window.ECRDASH_BASE_PATH = ".";', 'window.ECRDASH_BASE_PATH = "../..";')
-    .replace('href="./styles.css"', 'href="../../styles.css"')
-    .replace('src="./app.js"', 'src="../../app.js"');
+  let routeHtml = replaceRequired(
+    sourceHtml,
+    /window\.ECRDASH_BASE_PATH\s*=\s*["']\.["']\s*;/,
+    'window.ECRDASH_BASE_PATH = "../..";',
+    "window.ECRDASH_BASE_PATH assignment"
+  );
+  routeHtml = replaceRequired(
+    routeHtml,
+    /href\s*=\s*["']\.\/styles\.css["']/,
+    'href="../../styles.css"',
+    "styles.css href"
+  );
+  routeHtml = replaceRequired(
+    routeHtml,
+    /src\s*=\s*["']\.\/app\.js["']/,
+    'src="../../app.js"',
+    "app.js src"
+  );
 
   await fs.rm(toolRoutesDir, { recursive: true, force: true });
 
