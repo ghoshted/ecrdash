@@ -156,6 +156,26 @@ body {
   align-items: flex-start;
 }
 
+.dashboard-sidebar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dashboard-sidebar__clear {
+  padding: 0.34rem 0.6rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--line) 58%, var(--accent) 42%);
+  background: color-mix(in srgb, white 88%, var(--accent) 12%);
+}
+
+.dashboard-sidebar__clear:hover {
+  border-color: color-mix(in srgb, var(--line) 35%, var(--accent) 65%);
+  background: color-mix(in srgb, white 80%, var(--accent) 20%);
+}
+
 .dashboard-sidebar__header h2 {
   margin-bottom: 0.18rem;
 }
@@ -165,30 +185,37 @@ body {
   gap: 0.7rem;
 }
 
-.tool-sidebar-button {
+.tool-sidebar-control {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tool-sidebar-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tool-sidebar-select {
   width: 100%;
-  display: block;
+  padding: 0.72rem 2.4rem 0.72rem 0.85rem;
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--line) 72%, var(--accent) 28%);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+}
+
+.tool-sidebar-select:focus-visible {
+  outline: 2px solid color-mix(in srgb, white 28%, var(--accent) 72%);
+  outline-offset: 2px;
+}
+
+.tool-sidebar-summary {
   padding: 0.8rem;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
-  text-align: left;
-  cursor: pointer;
-}
-
-.tool-sidebar-button:hover {
-  border-color: color-mix(in srgb, var(--line) 45%, var(--accent) 55%);
-  background: color-mix(in srgb, white 86%, var(--accent) 14%);
-}
-
-.tool-sidebar-button.is-active {
-  border-color: color-mix(in srgb, var(--line) 28%, var(--accent) 72%);
-  background: color-mix(in srgb, white 76%, var(--accent) 24%);
-}
-
-.tool-sidebar-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, white 28%, var(--accent) 72%);
-  outline-offset: 2px;
 }
 
 .tool-sidebar-item__header {

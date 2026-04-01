@@ -430,10 +430,23 @@ function renderSummary(summary, count) {
 function renderToolSidebar(summary, selectedTool, visibleCount, totalCount) {
   const host = document.getElementById("toolSidebarList");
   const countEl = document.getElementById("toolSidebarCount");
+  const clearBtn = document.getElementById("toolSidebarClearBtn");
   const tools = Array.isArray(summary.byTool) ? summary.byTool : [];
+  const selectedEntry = tools.find((tool) => (tool.slug || slugifyToolName(tool.name)) === selectedTool) ?? null;
 
   host.innerHTML = "";
   countEl.textContent = selectedTool ? "Filter active" : `${tools.length} tools`;
+  if (clearBtn) {
+    clearBtn.hidden = !selectedTool;
+    clearBtn.onclick = selectedTool
+      ? () => {
+          appState.selectedTool = null;
+          tableState.page = 1;
+          syncToolRoute();
+          renderDashboard().catch(handleAppError);
+        }
+      : null;
+  }
 
   if (tools.length === 0) {
     const empty = document.createElement("p");
@@ -443,65 +456,71 @@ function renderToolSidebar(summary, selectedTool, visibleCount, totalCount) {
     return;
   }
 
-  const allButton = document.createElement("button");
-  allButton.type = "button";
-  allButton.className = "tool-sidebar-button";
-  if (!selectedTool) {
-    allButton.classList.add("is-active");
+  const controlWrap = document.createElement("div");
+  controlWrap.className = "tool-sidebar-control";
+
+  const label = document.createElement("label");
+  label.className = "tool-sidebar-label";
+  label.htmlFor = "toolSidebarSelect";
+  label.textContent = "Select tool";
+
+  const select = document.createElement("select");
+  select.id = "toolSidebarSelect";
+  select.className = "tool-sidebar-select";
+
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = `All tools (${totalCount} runs)`;
+  select.appendChild(allOption);
+
+  for (const tool of tools) {
+    const toolSlug = tool.slug || slugifyToolName(tool.name);
+    const option = document.createElement("option");
+    option.value = toolSlug;
+    option.textContent = `${tool.name || "Unknown"} (${tool.count || 0})`;
+    select.appendChild(option);
   }
-  allButton.innerHTML = `
-    <div class="tool-sidebar-item__header">
-      <h3 class="tool-sidebar-item__title">All tools</h3>
-      <span class="tool-sidebar-item__count">${totalCount} runs</span>
-    </div>
-    <dl class="tool-sidebar-item__stats">
-      <dt>Visible</dt>
-      <dd>${visibleCount}</dd>
-      <dt>Runtime</dt>
-      <dd>${escapeHtml(formatDuration(summary.totals.durationSeconds))}</dd>
-      <dt>Memory</dt>
-      <dd>${escapeHtml(`${summary.averages.memoryMb} MB avg`)}</dd>
-    </dl>
-  `;
-  allButton.addEventListener("click", () => {
-    if (appState.selectedTool === null) return;
-    appState.selectedTool = null;
+
+  select.value = selectedTool || "";
+  select.addEventListener("change", () => {
+    appState.selectedTool = select.value || null;
     tableState.page = 1;
     syncToolRoute();
     renderDashboard().catch(handleAppError);
   });
-  host.appendChild(allButton);
 
-  for (const tool of tools) {
-    const toolSlug = tool.slug || slugifyToolName(tool.name);
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "tool-sidebar-button";
-    if (selectedTool === toolSlug) {
-      item.classList.add("is-active");
-    }
+  controlWrap.append(label, select);
+  host.appendChild(controlWrap);
 
-    const header = document.createElement("div");
-    header.className = "tool-sidebar-item__header";
+  const summaryCard = document.createElement("div");
+  summaryCard.className = "tool-sidebar-summary";
+  summaryCard.innerHTML = selectedEntry
+    ? `
+      <div class="tool-sidebar-item__header">
+        <h3 class="tool-sidebar-item__title">${escapeHtml(selectedEntry.name || "Unknown")}</h3>
+        <span class="tool-sidebar-item__count">${selectedEntry.count || 0} run${selectedEntry.count === 1 ? "" : "s"}</span>
+      </div>
+      <dl class="tool-sidebar-item__stats">
+        <dt>Runtime</dt>
+        <dd>${escapeHtml(formatDuration(selectedEntry.totalDurationSeconds || 0))}</dd>
+        <dt>Input</dt>
+        <dd>${escapeHtml(formatBytes(selectedEntry.totalInputBytes || 0))}</dd>
+        <dt>Output</dt>
+        <dd>${escapeHtml(formatBytes(selectedEntry.totalOutputBytes || 0))}</dd>
+      </dl>
+    `
+    : `
+      <div class="tool-sidebar-item__header">
+        <h3 class="tool-sidebar-item__title">All tools</h3>
+        <span class="tool-sidebar-item__count">${totalCount} runs</span>
+      </div>
+      <dl class="tool-sidebar-item__stats">
+        <dt>Tools</dt>
+        <dd>${tools.length}</dd>
+      </dl>
+    `;
 
-    const name = document.createElement("h3");
-    name.className = "tool-sidebar-item__title";
-    name.textContent = tool.name || "Unknown";
-
-    const count = document.createElement("span");
-    count.className = "tool-sidebar-item__count";
-    count.textContent = `${tool.count || 0} run${tool.count === 1 ? "" : "s"}`;
-
-    header.append(name, count);
-    item.append(header);
-    item.addEventListener("click", () => {
-      appState.selectedTool = appState.selectedTool === toolSlug ? null : toolSlug;
-      tableState.page = 1;
-      syncToolRoute();
-      renderDashboard().catch(handleAppError);
-    });
-    host.appendChild(item);
-  }
+  host.appendChild(summaryCard);
 }
 
 function replaceChart(key, canvasId, config) {
