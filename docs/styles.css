@@ -24,6 +24,17 @@ body {
   margin: 1.5rem auto 2rem;
 }
 
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  gap: 0.9rem;
+  align-items: start;
+}
+
+.dashboard-main {
+  min-width: 0;
+}
+
 .hero-title-row {
   display: flex;
   align-items: center;
@@ -133,6 +144,124 @@ body {
   margin: 0 0 0.7rem;
   font-size: 0.92rem;
   font-weight: 600;
+}
+
+.dashboard-sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.dashboard-sidebar__header {
+  margin-bottom: 0.85rem;
+  align-items: flex-start;
+}
+
+.dashboard-sidebar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dashboard-sidebar__clear {
+  padding: 0.34rem 0.6rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--line) 58%, var(--accent) 42%);
+  background: color-mix(in srgb, white 88%, var(--accent) 12%);
+}
+
+.dashboard-sidebar__clear:hover {
+  border-color: color-mix(in srgb, var(--line) 35%, var(--accent) 65%);
+  background: color-mix(in srgb, white 80%, var(--accent) 20%);
+}
+
+.dashboard-sidebar__header h2 {
+  margin-bottom: 0.18rem;
+}
+
+.tool-sidebar-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.tool-sidebar-control {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tool-sidebar-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tool-sidebar-select {
+  width: 100%;
+  padding: 0.72rem 2.4rem 0.72rem 0.85rem;
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--line) 72%, var(--accent) 28%);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+}
+
+.tool-sidebar-select:focus-visible {
+  outline: 2px solid color-mix(in srgb, white 28%, var(--accent) 72%);
+  outline-offset: 2px;
+}
+
+.tool-sidebar-summary {
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+}
+
+.tool-sidebar-item__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tool-sidebar-item__title {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+.tool-sidebar-item__count {
+  flex-shrink: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.tool-sidebar-item__stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.38rem 0.75rem;
+  margin: 0.7rem 0 0;
+}
+
+.tool-sidebar-item__stats dt,
+.tool-sidebar-item__stats dd {
+  margin: 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+}
+
+.tool-sidebar-item__stats dt {
+  color: var(--muted);
+}
+
+.tool-sidebar-item__stats dd {
+  text-align: right;
+}
+
+.tool-sidebar-empty {
+  padding: 0.2rem 0;
 }
 
 .panel-title-row {
@@ -368,6 +497,14 @@ canvas {
 }
 
 @media (max-width: 850px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    position: static;
+  }
+
   .panel-grid {
     grid-template-columns: 1fr;
   }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-25T11:41:17.630Z",
+  "generatedAt": "2026-04-01T16:41:21.858Z",
   "reportCount": 29,
   "summary": {
     "totals": {
@@ -21,6 +21,7 @@
     "byTool": [
       {
         "name": "FastQC",
+        "slug": "fastqc",
         "count": 5,
         "totalDurationSeconds": 1486,
         "totalInputBytes": 3604575646,
@@ -28,6 +29,7 @@
       },
       {
         "name": "Convert BED to GFF",
+        "slug": "convert-bed-to-gff",
         "count": 2,
         "totalDurationSeconds": 173,
         "totalInputBytes": 5586,
@@ -35,6 +37,7 @@
       },
       {
         "name": "InterProScan",
+        "slug": "interproscan",
         "count": 2,
         "totalDurationSeconds": 949,
         "totalInputBytes": 19456,
@@ -42,6 +45,7 @@
       },
       {
         "name": "Alphafold 2",
+        "slug": "alphafold-2",
         "count": 1,
         "totalDurationSeconds": 17584,
         "totalInputBytes": 31,
@@ -49,6 +53,7 @@
       },
       {
         "name": "Augustus",
+        "slug": "augustus",
         "count": 1,
         "totalDurationSeconds": 35,
         "totalInputBytes": 51,
@@ -56,6 +61,7 @@
       },
       {
         "name": "bcftools consensus",
+        "slug": "bcftools-consensus",
         "count": 1,
         "totalDurationSeconds": 57,
         "totalInputBytes": 31566,
@@ -63,6 +69,7 @@
       },
       {
         "name": "bcftools norm",
+        "slug": "bcftools-norm",
         "count": 1,
         "totalDurationSeconds": 77,
         "totalInputBytes": 31566,
@@ -70,6 +77,7 @@
       },
       {
         "name": "Bismark Mapper",
+        "slug": "bismark-mapper",
         "count": 1,
         "totalDurationSeconds": 32,
         "totalInputBytes": 68750,
@@ -77,6 +85,7 @@
       },
       {
         "name": "Bismark Pretty Report",
+        "slug": "bismark-pretty-report",
         "count": 1,
         "totalDurationSeconds": 25,
         "totalInputBytes": 2002,
@@ -84,6 +93,7 @@
       },
       {
         "name": "Convert GFF to BED",
+        "slug": "convert-gff-to-bed",
         "count": 1,
         "totalDurationSeconds": 18,
         "totalInputBytes": 20123,
@@ -91,6 +101,7 @@
       },
       {
         "name": "cuteSV",
+        "slug": "cutesv",
         "count": 1,
         "totalDurationSeconds": 29,
         "totalInputBytes": 33548,
@@ -98,6 +109,7 @@
       },
       {
         "name": "fastp",
+        "slug": "fastp",
         "count": 1,
         "totalDurationSeconds": 49,
         "totalInputBytes": 990,
@@ -105,6 +117,7 @@
       },
       {
         "name": "Funannotate assembly clean",
+        "slug": "funannotate-assembly-clean",
         "count": 1,
         "totalDurationSeconds": 97,
         "totalInputBytes": 51,
@@ -112,6 +125,7 @@
       },
       {
         "name": "hmmconvert",
+        "slug": "hmmconvert",
         "count": 1,
         "totalDurationSeconds": 121,
         "totalInputBytes": 56356,
@@ -119,6 +133,7 @@
       },
       {
         "name": "Iris",
+        "slug": "iris",
         "count": 1,
         "totalDurationSeconds": 25,
         "totalInputBytes": 34790,
@@ -126,6 +141,7 @@
       },
       {
         "name": "JasmineSV",
+        "slug": "jasminesv",
         "count": 1,
         "totalDurationSeconds": 18,
         "totalInputBytes": 2484,
@@ -133,6 +149,7 @@
       },
       {
         "name": "Lofreq filter",
+        "slug": "lofreq-filter",
         "count": 1,
         "totalDurationSeconds": 47,
         "totalInputBytes": 1242,
@@ -140,6 +157,7 @@
       },
       {
         "name": "Naive Variant Caller (NVC)",
+        "slug": "naive-variant-caller-nvc",
         "count": 1,
         "totalDurationSeconds": 24,
         "totalInputBytes": 44155,
@@ -147,6 +165,7 @@
       },
       {
         "name": "Protein Calculator",
+        "slug": "protein-calculator",
         "count": 1,
         "totalDurationSeconds": 28,
         "totalInputBytes": 31,
@@ -154,6 +173,7 @@
       },
       {
         "name": "Shasta",
+        "slug": "shasta",
         "count": 1,
         "totalDurationSeconds": 23,
         "totalInputBytes": 102,
@@ -161,6 +181,7 @@
       },
       {
         "name": "SnpEff eff:",
+        "slug": "snpeff-eff",
         "count": 1,
         "totalDurationSeconds": 67,
         "totalInputBytes": 8952,
@@ -168,6 +189,7 @@
       },
       {
         "name": "VarDict",
+        "slug": "vardict",
         "count": 1,
         "totalDurationSeconds": 30,
         "totalInputBytes": 308457,
@@ -175,6 +197,7 @@
       },
       {
         "name": "VCFsort:",
+        "slug": "vcfsort",
         "count": 1,
         "totalDurationSeconds": 65,
         "totalInputBytes": 1242,
@@ -376,7 +399,8 @@
       "memoryUsedMb": 49152,
       "cpuCoresAssigned": 12,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 1
+      "gpuCoresUsed": 1,
+      "toolSlug": "alphafold-2"
     },
     {
       "fileName": "test_report_0924e8b89fab5fe0.json",
@@ -398,7 +422,8 @@
       "memoryUsedMb": 5734,
       "cpuCoresAssigned": 3,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastqc"
     },
     {
       "fileName": "test_report_1b7efd7b253e00d7.json",
@@ -420,7 +445,8 @@
       "memoryUsedMb": 5734,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastqc"
     },
     {
       "fileName": "test_report_225a7611fd707212.json",
@@ -442,7 +468,8 @@
       "memoryUsedMb": 5734,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastqc"
     },
     {
       "fileName": "test_report_71e51e48202221a5.json",
@@ -464,7 +491,8 @@
       "memoryUsedMb": 5734,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastqc"
     },
     {
       "fileName": "test_report_29f2dbd149c18a16.json",
@@ -486,7 +514,8 @@
       "memoryUsedMb": 5734,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastqc"
     },
     {
       "fileName": "test_report_74558c36ae866c42.json",
@@ -508,7 +537,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "protein-calculator"
     },
     {
       "fileName": "test_report_36a849b344deb8f0.json",
@@ -530,7 +560,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "convert-bed-to-gff"
     },
     {
       "fileName": "test_report_0bedddc8b0c32307.json",
@@ -558,7 +589,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "convert-bed-to-gff"
     },
     {
       "fileName": "test_report_76377308fdd983d7.json",
@@ -580,7 +612,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "hmmconvert"
     },
     {
       "fileName": "test_report_1fa0df32eaa4f5e0.json",
@@ -602,7 +635,8 @@
       "memoryUsedMb": 40960,
       "cpuCoresAssigned": 8,
       "cpuCoresUsed": 8,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "funannotate-assembly-clean"
     },
     {
       "fileName": "test_report_6cb23fecde182fc1.json",
@@ -624,7 +658,8 @@
       "memoryUsedMb": 40960,
       "cpuCoresAssigned": 8,
       "cpuCoresUsed": 8,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "interproscan"
     },
     {
       "fileName": "test_report_092def693253cd27.json",
@@ -646,7 +681,8 @@
       "memoryUsedMb": 40960,
       "cpuCoresAssigned": 8,
       "cpuCoresUsed": 8,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "interproscan"
     },
     {
       "fileName": "test_report_3918c608d1acbb81.json",
@@ -668,7 +704,8 @@
       "memoryUsedMb": 30720,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "augustus"
     },
     {
       "fileName": "test_report_12d110f8ab0ff672.json",
@@ -690,7 +727,8 @@
       "memoryUsedMb": 12288,
       "cpuCoresAssigned": 10,
       "cpuCoresUsed": 10,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "shasta"
     },
     {
       "fileName": "test_report_339df4ffcb0344d1.json",
@@ -712,7 +750,8 @@
       "memoryUsedMb": 30720,
       "cpuCoresAssigned": 6,
       "cpuCoresUsed": 6,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "bismark-mapper"
     },
     {
       "fileName": "test_report_480ae1020f9b230e.json",
@@ -734,7 +773,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "bismark-pretty-report"
     },
     {
       "fileName": "test_report_62f1a59d148a5fd3.json",
@@ -756,7 +796,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "convert-gff-to-bed"
     },
     {
       "fileName": "test_report_24fbb18a96555309.json",
@@ -778,7 +819,8 @@
       "memoryUsedMb": 12288,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "snpeff-eff"
     },
     {
       "fileName": "test_report_255d464a5de97d63.json",
@@ -800,7 +842,8 @@
       "memoryUsedMb": 20480,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "naive-variant-caller-nvc"
     },
     {
       "fileName": "test_report_3476e60dfe1f8579.json",
@@ -822,7 +865,8 @@
       "memoryUsedMb": 64512,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 2,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "vardict"
     },
     {
       "fileName": "test_report_42ebab86f24e4e56.json",
@@ -844,7 +888,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "cutesv"
     },
     {
       "fileName": "test_report_19b53b43b4133174.json",
@@ -866,7 +911,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "jasminesv"
     },
     {
       "fileName": "test_report_0da2d0e02a716183.json",
@@ -894,7 +940,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "iris"
     },
     {
       "fileName": "test_report_1f220f409481e29a.json",
@@ -916,7 +963,8 @@
       "memoryUsedMb": 8192,
       "cpuCoresAssigned": 2,
       "cpuCoresUsed": 2,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "bcftools-norm"
     },
     {
       "fileName": "test_report_4075a9526623d8a2.json",
@@ -938,7 +986,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "bcftools-consensus"
     },
     {
       "fileName": "test_report_5931112bcfb46b94.json",
@@ -960,7 +1009,8 @@
       "memoryUsedMb": 3891,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "vcfsort"
     },
     {
       "fileName": "test_report_65aef444da147049.json",
@@ -982,7 +1032,8 @@
       "memoryUsedMb": 15564,
       "cpuCoresAssigned": 1,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "lofreq-filter"
     },
     {
       "fileName": "test_report_714c72dbacf22e85.json",
@@ -1004,7 +1055,8 @@
       "memoryUsedMb": 8192,
       "cpuCoresAssigned": 4,
       "cpuCoresUsed": 1,
-      "gpuCoresUsed": 0
+      "gpuCoresUsed": 0,
+      "toolSlug": "fastp"
     }
   ]
 }

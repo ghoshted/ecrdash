@@ -87,6 +87,191 @@ function renderChipList(values) {
     .join("")}</div>`;
 }
 
+const appState = {
+  allReports: [],
+  visibleReports: [],
+  baseSummary: null,
+  selectedTool: null,
+  charts: {},
+  locationMap: null,
+  locationMarkerLayer: null,
+  geocodeCache: new Map(),
+  geocodeInFlight: new Map(),
+  renderVersion: 0,
+};
+
+const initialPageUrl = new URL(window.location.href);
+
+function dashboardBaseUrl() {
+  const configuredBasePath = window.ECRDASH_BASE_PATH || ".";
+  return new URL(`${configuredBasePath}/`, initialPageUrl);
+}
+
+function dashboardRoutePath(toolSlug = null) {
+  const baseUrl = dashboardBaseUrl();
+  const path = toolSlug ? `tool/${toolSlug}` : "";
+  return new URL(path, baseUrl).pathname.replace(/\/$/, path ? "" : "/");
+}
+
+function toolFromLocation() {
+  const baseUrl = dashboardBaseUrl();
+  const currentUrl = new URL(window.location.href);
+  const basePath = baseUrl.pathname.replace(/\/$/, "");
+  const currentPath = currentUrl.pathname.replace(/\/$/, "");
+  const relativePath = basePath && currentPath.startsWith(basePath)
+    ? currentPath.slice(basePath.length)
+    : currentPath;
+  const match = relativePath.match(/^\/tool\/([^/]+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+function syncToolRoute() {
+  const nextPath = dashboardRoutePath(appState.selectedTool);
+  if (window.location.pathname !== nextPath) {
+    window.history.pushState({ tool: appState.selectedTool }, "", nextPath);
+  }
+}
+
+function applyToolFromRoute() {
+  const routeTool = toolFromLocation();
+
+  if (!routeTool) {
+    appState.selectedTool = null;
+    return;
+  }
+
+  const exists = appState.allReports.some((report) => report.toolSlug === routeTool);
+  appState.selectedTool = exists ? routeTool : null;
+
+  if (!exists) {
+    window.history.replaceState({ tool: null }, "", dashboardRoutePath(null));
+  }
+}
+
+function summarizeReports(reports) {
+  const totals = {
+    reports: reports.length,
+    inputBytes: 0,
+    outputBytes: 0,
+    memoryMb: 0,
+    cpuAssigned: 0,
+    cpuUsed: 0,
+    gpuUsed: 0,
+    durationSeconds: 0,
+  };
+
+  const byToolMap = new Map();
+  const byDayMap = new Map();
+  const byDayToolMemoryMap = new Map();
+  const byCountryMap = new Map();
+  const byInfraMap = new Map();
+
+  for (const report of reports) {
+    totals.inputBytes += Number(report.inputSizeBytes) || 0;
+    totals.outputBytes += Number(report.outputSizeBytes) || 0;
+    totals.memoryMb += Number(report.memoryUsedMb) || 0;
+    totals.cpuAssigned += Number(report.cpuCoresAssigned) || 0;
+    totals.cpuUsed += Number(report.cpuCoresUsed) || 0;
+    totals.gpuUsed += Number(report.gpuCoresUsed) || 0;
+    totals.durationSeconds += Number(report.durationSeconds) || 0;
+
+    const toolEntry = byToolMap.get(report.toolName) ?? {
+      name: report.toolName,
+      slug: report.toolSlug || null,
+      count: 0,
+      totalDurationSeconds: 0,
+      totalInputBytes: 0,
+      totalOutputBytes: 0,
+    };
+    toolEntry.count += 1;
+    toolEntry.totalDurationSeconds += Number(report.durationSeconds) || 0;
+    toolEntry.totalInputBytes += Number(report.inputSizeBytes) || 0;
+    toolEntry.totalOutputBytes += Number(report.outputSizeBytes) || 0;
+    byToolMap.set(report.toolName, toolEntry);
+
+    const day = report.startDay;
+    if (day) {
+      const dayEntry = byDayMap.get(day) ?? {
+        day,
+        count: 0,
+        durationSeconds: 0,
+      };
+      dayEntry.count += 1;
+      dayEntry.durationSeconds += Number(report.durationSeconds) || 0;
+      byDayMap.set(day, dayEntry);
+
+      const byToolForDay = byDayToolMemoryMap.get(day) ?? new Map();
+      const currentMemory = byToolForDay.get(report.toolName) ?? 0;
+      byToolForDay.set(report.toolName, currentMemory + (Number(report.memoryUsedMb) || 0));
+      byDayToolMemoryMap.set(day, byToolForDay);
+    }
+
+    const country = report.location?.addressCountry || "";
+    if (country) {
+      const countryEntry = byCountryMap.get(country) ?? {
+        country,
+        count: 0,
+      };
+      countryEntry.count += 1;
+      byCountryMap.set(country, countryEntry);
+    }
+
+    for (const infraName of report.infra || []) {
+      const infraEntry = byInfraMap.get(infraName) ?? {
+        name: infraName,
+        count: 0,
+        totalDurationSeconds: 0,
+      };
+      infraEntry.count += 1;
+      infraEntry.totalDurationSeconds += Number(report.durationSeconds) || 0;
+      byInfraMap.set(infraName, infraEntry);
+    }
+  }
+
+  return {
+    totals,
+    averages: {
+      durationSeconds: totals.reports ? Math.round(totals.durationSeconds / totals.reports) : 0,
+      memoryMb: totals.reports ? Math.round(totals.memoryMb / totals.reports) : 0,
+      inputBytes: totals.reports ? Math.round(totals.inputBytes / totals.reports) : 0,
+      outputBytes: totals.reports ? Math.round(totals.outputBytes / totals.reports) : 0,
+    },
+    byTool: [...byToolMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+    byDay: [...byDayMap.values()].sort((a, b) => a.day.localeCompare(b.day)),
+    byDayToolMemory: [...byDayToolMemoryMap.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([day, toolMap]) => ({
+        day,
+        tools: [...toolMap.entries()]
+          .map(([name, memoryMb]) => ({ name, memoryMb }))
+          .sort((a, b) => b.memoryMb - a.memoryMb || a.name.localeCompare(b.name)),
+      })),
+    byCountry: [...byCountryMap.values()].sort((a, b) => b.count - a.count || a.country.localeCompare(b.country)),
+    byInfra: [...byInfraMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+  };
+}
+
+function activeReports() {
+  return appState.selectedTool
+    ? appState.allReports.filter((report) => report.toolSlug === appState.selectedTool)
+    : appState.allReports;
+}
+
+function handleAppError(error) {
+  console.error(error);
+  document.getElementById("generatedAt").textContent = "failed to load";
+  document.getElementById("summaryCards").innerHTML = '<article class="card"><div class="card-label">Error</div><div class="card-value">Data load failed</div></article>';
+}
+
 function renderReportModal(report) {
   const modal = document.getElementById("reportModal");
   const title = document.getElementById("reportModalTitle");
@@ -234,11 +419,116 @@ function renderSummary(summary, count) {
   );
 }
 
+function renderToolSidebar(summary, selectedTool, totalCount) {
+  const host = document.getElementById("toolSidebarList");
+  const countEl = document.getElementById("toolSidebarCount");
+  const clearBtn = document.getElementById("toolSidebarClearBtn");
+  const tools = Array.isArray(summary.byTool) ? summary.byTool : [];
+  const selectedEntry = tools.find((tool) => tool.slug === selectedTool) ?? null;
+
+  host.innerHTML = "";
+  countEl.textContent = selectedTool ? "Filter active" : `${tools.length} tools`;
+  if (clearBtn) {
+    clearBtn.hidden = !selectedTool;
+    clearBtn.onclick = selectedTool
+      ? () => {
+          appState.selectedTool = null;
+          tableState.page = 1;
+          syncToolRoute();
+          renderDashboard().catch(handleAppError);
+        }
+      : null;
+  }
+
+  if (tools.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "hint tool-sidebar-empty";
+    empty.textContent = "No tool metadata was found in the loaded reports.";
+    host.appendChild(empty);
+    return;
+  }
+
+  const controlWrap = document.createElement("div");
+  controlWrap.className = "tool-sidebar-control";
+
+  const label = document.createElement("label");
+  label.className = "tool-sidebar-label";
+  label.htmlFor = "toolSidebarSelect";
+  label.textContent = "Select tool";
+
+  const select = document.createElement("select");
+  select.id = "toolSidebarSelect";
+  select.className = "tool-sidebar-select";
+
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = `All tools (${totalCount} runs)`;
+  select.appendChild(allOption);
+
+  for (const tool of tools) {
+    const toolSlug = tool.slug;
+    if (!toolSlug) {
+      continue;
+    }
+    const option = document.createElement("option");
+    option.value = toolSlug;
+    option.textContent = `${tool.name || "Unknown"} (${tool.count || 0})`;
+    select.appendChild(option);
+  }
+
+  select.value = selectedTool || "";
+  select.addEventListener("change", () => {
+    appState.selectedTool = select.value || null;
+    tableState.page = 1;
+    syncToolRoute();
+    renderDashboard().catch(handleAppError);
+  });
+
+  controlWrap.append(label, select);
+  host.appendChild(controlWrap);
+
+  const summaryCard = document.createElement("div");
+  summaryCard.className = "tool-sidebar-summary";
+  summaryCard.innerHTML = selectedEntry
+    ? `
+      <div class="tool-sidebar-item__header">
+        <h3 class="tool-sidebar-item__title">${escapeHtml(selectedEntry.name || "Unknown")}</h3>
+        <span class="tool-sidebar-item__count">${selectedEntry.count || 0} run${selectedEntry.count === 1 ? "" : "s"}</span>
+      </div>
+      <dl class="tool-sidebar-item__stats">
+        <dt>Runtime</dt>
+        <dd>${escapeHtml(formatDuration(selectedEntry.totalDurationSeconds || 0))}</dd>
+        <dt>Input</dt>
+        <dd>${escapeHtml(formatBytes(selectedEntry.totalInputBytes || 0))}</dd>
+        <dt>Output</dt>
+        <dd>${escapeHtml(formatBytes(selectedEntry.totalOutputBytes || 0))}</dd>
+      </dl>
+    `
+    : `
+      <div class="tool-sidebar-item__header">
+        <h3 class="tool-sidebar-item__title">All tools</h3>
+        <span class="tool-sidebar-item__count">${totalCount} runs</span>
+      </div>
+      <dl class="tool-sidebar-item__stats">
+        <dt>Tools</dt>
+        <dd>${tools.length}</dd>
+      </dl>
+    `;
+
+  host.appendChild(summaryCard);
+}
+
+function replaceChart(key, canvasId, config) {
+  appState.charts[key]?.destroy();
+  const canvas = document.getElementById(canvasId);
+  appState.charts[key] = new Chart(canvas, config);
+}
+
 function renderToolChart(summary) {
   const labels = summary.byTool.map((x) => x.name);
   const data = summary.byTool.map((x) => x.count);
 
-  new Chart(document.getElementById("toolChart"), {
+  replaceChart("toolChart", "toolChart", {
     type: "bar",
     data: {
       labels,
@@ -266,7 +556,7 @@ function renderRuntimeTrend(summary) {
   const labels = summary.byDay.map((x) => x.day);
   const data = summary.byDay.map((x) => Number((x.durationSeconds / 60).toFixed(2)));
 
-  new Chart(document.getElementById("runtimeChart"), {
+  replaceChart("runtimeChart", "runtimeChart", {
     type: "line",
     data: {
       labels,
@@ -310,7 +600,7 @@ function renderInfraChart(summary, reports) {
   const labels = infraData.map((x) => x.name);
   const data = infraData.map((x) => x.count);
 
-  new Chart(document.getElementById("infraChart"), {
+  replaceChart("infraChart", "infraChart", {
     type: "bar",
     data: {
       labels,
@@ -344,9 +634,6 @@ function colorForTool(index, total) {
 
 function renderMemoryByToolDayChart(summary) {
   const byDayToolMemory = Array.isArray(summary.byDayToolMemory) ? summary.byDayToolMemory : [];
-  if (byDayToolMemory.length === 0) {
-    return;
-  }
 
   const labels = byDayToolMemory.map((entry) => entry.day);
   const toolNames = [...new Set(byDayToolMemory.flatMap((entry) => (entry.tools || []).map((tool) => tool.name)))];
@@ -369,7 +656,7 @@ function renderMemoryByToolDayChart(summary) {
     };
   });
 
-  new Chart(document.getElementById("memoryByToolDayChart"), {
+  replaceChart("memoryByToolDayChart", "memoryByToolDayChart", {
     type: "bar",
     data: {
       labels,
@@ -495,7 +782,7 @@ const tableState = {
   pageSize: 25,
 };
 
-function setupTableControls(reports) {
+function setupTableControls() {
   const headers = document.querySelectorAll("th.sortable");
   for (const th of headers) {
     if (!th.dataset.label) {
@@ -513,7 +800,7 @@ function setupTableControls(reports) {
         tableState.sortDir = "asc";
       }
       tableState.page = 1;
-      renderTable(reports);
+      renderTable(appState.visibleReports);
     });
   }
 
@@ -521,17 +808,17 @@ function setupTableControls(reports) {
   pageSizeSelect.addEventListener("change", () => {
     tableState.pageSize = Number(pageSizeSelect.value) || 25;
     tableState.page = 1;
-    renderTable(reports);
+    renderTable(appState.visibleReports);
   });
 
   document.getElementById("prevPageBtn").addEventListener("click", () => {
     tableState.page -= 1;
-    renderTable(reports);
+    renderTable(appState.visibleReports);
   });
 
   document.getElementById("nextPageBtn").addEventListener("click", () => {
     tableState.page += 1;
-    renderTable(reports);
+    renderTable(appState.visibleReports);
   });
 }
 
@@ -618,8 +905,47 @@ async function geocode(query) {
   };
 }
 
-async function renderLocationMap(byCountry) {
-  const statusEl = document.getElementById("locationMapStatus");
+async function resolveCountryLocation(country) {
+  const known = countryCoordinate(country);
+  if (known) {
+    return {
+      lat: known[0],
+      lon: known[1],
+      displayName: country,
+    };
+  }
+
+  const cacheKey = normalizeCountryKey(country) || String(country || "").trim().toLowerCase();
+  if (appState.geocodeCache.has(cacheKey)) {
+    return appState.geocodeCache.get(cacheKey);
+  }
+
+  if (appState.geocodeInFlight.has(cacheKey)) {
+    return appState.geocodeInFlight.get(cacheKey);
+  }
+
+  const pending = geocode(country)
+    .then((result) => {
+      appState.geocodeCache.set(cacheKey, result);
+      return result;
+    })
+    .catch(() => {
+      appState.geocodeCache.set(cacheKey, null);
+      return null;
+    })
+    .finally(() => {
+      appState.geocodeInFlight.delete(cacheKey);
+    });
+
+  appState.geocodeInFlight.set(cacheKey, pending);
+  return pending;
+}
+
+function ensureLocationMap() {
+  if (appState.locationMap && appState.locationMarkerLayer) {
+    return;
+  }
+
   const europeBounds = L.latLngBounds(
     [32, -11],
     [67, 32]
@@ -629,6 +955,7 @@ async function renderLocationMap(byCountry) {
     maxBounds: europeBounds.pad(0.08),
     maxBoundsViscosity: 1,
   });
+
   map.fitBounds(europeBounds);
   map.setZoom(map.getZoom() + 1);
 
@@ -637,6 +964,18 @@ async function renderLocationMap(byCountry) {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
 
+  appState.locationMap = map;
+  appState.locationMarkerLayer = L.layerGroup().addTo(map);
+}
+
+async function renderLocationMap(byCountry, renderVersion) {
+  const statusEl = document.getElementById("locationMapStatus");
+  ensureLocationMap();
+  const markerLayer = appState.locationMarkerLayer;
+  markerLayer.clearLayers();
+
+  const isStale = () => renderVersion !== appState.renderVersion;
+
   if (!Array.isArray(byCountry) || byCountry.length === 0) {
     statusEl.textContent = "No populated location fields were found in reports.";
     return;
@@ -644,71 +983,83 @@ async function renderLocationMap(byCountry) {
 
   statusEl.textContent = "Resolving country locations...";
 
-  const markers = [];
+  let markers = 0;
   const unresolved = [];
 
   for (const entry of byCountry) {
+    if (isStale()) return;
+
     const country = entry.country;
     const count = entry.count ?? 0;
 
-    const known = countryCoordinate(country);
-    if (known) {
-      const marker = L.marker(known).addTo(map);
-      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}`);
-      markers.push(marker);
+    const result = await resolveCountryLocation(country);
+    if (isStale()) return;
+
+    if (!result) {
+      unresolved.push(country);
       continue;
     }
 
-    try {
-      const result = await geocode(country);
-      if (!result) {
-        unresolved.push(country);
-        continue;
-      }
-
-      const marker = L.marker([result.lat, result.lon]).addTo(map);
-      marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}<br/>${result.displayName}`);
-      markers.push(marker);
-    } catch (_error) {
-      unresolved.push(country);
-    }
+    const marker = L.marker([result.lat, result.lon]).addTo(markerLayer);
+    const details = result.displayName && result.displayName !== country ? `<br/>${result.displayName}` : "";
+    marker.bindPopup(`<strong>${country}</strong><br/>Reports: ${count}${details}`);
+    markers += 1;
   }
 
-  if (markers.length === 0) {
+  if (isStale()) return;
+
+  if (markers === 0) {
     statusEl.textContent = "Location values exist, but coordinates could not be resolved.";
     return;
   }
 
   if (unresolved.length > 0) {
-    statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}. Unresolved: ${unresolved.join(", ")}.`;
+    statusEl.textContent = `Showing ${markers} mapped countr${markers === 1 ? "y" : "ies"}. Unresolved: ${unresolved.join(", ")}.`;
     return;
   }
 
-  statusEl.textContent = `Showing ${markers.length} mapped countr${markers.length === 1 ? "y" : "ies"}.`;
+  statusEl.textContent = `Showing ${markers} mapped countr${markers === 1 ? "y" : "ies"}.`;
 }
 
 async function bootstrap() {
-  const res = await fetch("./data/reports.json", { cache: "no-store" });
+  const dataUrl = new URL("data/reports.json", dashboardBaseUrl());
+  const res = await fetch(dataUrl, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`Could not load report data: ${res.status}`);
   }
 
   const data = await res.json();
 
+  appState.allReports = Array.isArray(data.reports) ? data.reports : [];
+  appState.baseSummary = data.summary || summarizeReports(appState.allReports);
+  applyToolFromRoute();
   document.getElementById("generatedAt").textContent = formatDate(data.generatedAt);
   setupReportModal();
-  renderSummary(data.summary, data.reportCount);
-  renderToolChart(data.summary);
-  renderRuntimeTrend(data.summary);
-  renderInfraChart(data.summary, data.reports);
-  renderMemoryByToolDayChart(data.summary);
-  await renderLocationMap(data.summary.byCountry || []);
-  setupTableControls(data.reports);
-  renderTable(data.reports);
+  setupTableControls();
+  window.addEventListener("popstate", () => {
+    applyToolFromRoute();
+    tableState.page = 1;
+    renderDashboard().catch(handleAppError);
+  });
+  await renderDashboard();
 }
 
-bootstrap().catch((error) => {
-  console.error(error);
-  document.getElementById("generatedAt").textContent = "failed to load";
-  document.getElementById("summaryCards").innerHTML = `<article class="card"><div class="card-label">Error</div><div class="card-value">Data load failed</div></article>`;
-});
+async function renderDashboard() {
+  const reports = activeReports();
+  const summary = summarizeReports(reports);
+  const renderVersion = appState.renderVersion + 1;
+
+  appState.renderVersion = renderVersion;
+  appState.visibleReports = reports;
+
+  renderSummary(summary, reports.length);
+  renderToolSidebar(appState.baseSummary || summary, appState.selectedTool, appState.allReports.length);
+  renderToolChart(summary);
+  renderRuntimeTrend(summary);
+  renderInfraChart(summary, reports);
+  renderMemoryByToolDayChart(summary);
+  renderTable(reports);
+  await renderLocationMap(summary.byCountry || [], renderVersion);
+}
+
+bootstrap().catch(handleAppError);

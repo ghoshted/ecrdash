@@ -3,12 +3,39 @@ import path from "node:path";
 
 const rootDir = process.cwd();
 const reportsDir = path.join(rootDir, "reports_output_dir");
+const docsDir = path.join(rootDir, "docs");
 const outputDir = path.join(rootDir, "docs", "data");
 const outputFile = path.join(outputDir, "reports.json");
+const toolRoutesDir = path.join(docsDir, "tool");
 
 function safeNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
+}
+
+function slugifyToolName(value) {
+  const normalized = String(value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || "tool";
+}
+
+function buildToolSlugMap(toolNames) {
+  const slugCounts = new Map();
+  const slugMap = new Map();
+
+  for (const toolName of [...toolNames].sort((a, b) => a.localeCompare(b))) {
+    const baseSlug = slugifyToolName(toolName);
+    const count = (slugCounts.get(baseSlug) ?? 0) + 1;
+    slugCounts.set(baseSlug, count);
+    slugMap.set(toolName, count === 1 ? baseSlug : `${baseSlug}-${count}`);
+  }
+
+  return slugMap;
 }
 
 function parseReportTimestamp(value) {
@@ -78,6 +105,14 @@ function normalizeLocation(location) {
   };
 }
 
+function replaceRequired(source, searchValue, replaceValue, description) {
+  const next = source.replace(searchValue, replaceValue);
+  if (next === source) {
+    throw new Error(`Could not update tool route HTML: missing ${description} in docs/index.html`);
+  }
+  return next;
+}
+
 function summarize(reports) {
   const totals = {
     reports: reports.length,
@@ -107,6 +142,7 @@ function summarize(reports) {
 
     const toolEntry = byToolMap.get(report.toolName) ?? {
       name: report.toolName,
+      slug: report.toolSlug,
       count: 0,
       totalDurationSeconds: 0,
       totalInputBytes: 0,
@@ -186,6 +222,36 @@ function summarize(reports) {
   };
 }
 
+async function writeToolRoutes(summary) {
+  const sourceHtml = await fs.readFile(path.join(docsDir, "index.html"), "utf8");
+  let routeHtml = replaceRequired(
+    sourceHtml,
+    /window\.ECRDASH_BASE_PATH\s*=\s*["']\.["']\s*;/,
+    'window.ECRDASH_BASE_PATH = "../..";',
+    "window.ECRDASH_BASE_PATH assignment"
+  );
+  routeHtml = replaceRequired(
+    routeHtml,
+    /href\s*=\s*["']\.\/styles\.css["']/,
+    'href="../../styles.css"',
+    "styles.css href"
+  );
+  routeHtml = replaceRequired(
+    routeHtml,
+    /src\s*=\s*["']\.\/app\.js["']/,
+    'src="../../app.js"',
+    "app.js src"
+  );
+
+  await fs.rm(toolRoutesDir, { recursive: true, force: true });
+
+  for (const tool of summary.byTool) {
+    const toolDir = path.join(toolRoutesDir, tool.slug);
+    await fs.mkdir(toolDir, { recursive: true });
+    await fs.writeFile(path.join(toolDir, "index.html"), routeHtml, "utf8");
+  }
+}
+
 async function loadReports() {
   const files = (await fs.readdir(reportsDir))
     .filter((name) => name.endsWith(".json"))
@@ -221,6 +287,11 @@ async function loadReports() {
     });
   }
 
+  const toolSlugMap = buildToolSlugMap(new Set(reports.map((report) => report.toolName)));
+  for (const report of reports) {
+    report.toolSlug = toolSlugMap.get(report.toolName) ?? slugifyToolName(report.toolName);
+  }
+
   reports.sort((a, b) => {
     if (!a.startTime && !b.startTime) return a.fileName.localeCompare(b.fileName);
     if (!a.startTime) return 1;
@@ -244,6 +315,7 @@ async function main() {
 
   await fs.mkdir(outputDir, { recursive: true });
   await fs.writeFile(outputFile, JSON.stringify(payload, null, 2) + "\n", "utf8");
+  await writeToolRoutes(summary);
 
   console.log(`Wrote ${reports.length} reports to ${path.relative(rootDir, outputFile)}`);
 }
