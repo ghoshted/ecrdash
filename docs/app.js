@@ -492,19 +492,8 @@ function renderToolSidebar(summary, selectedTool, visibleCount, totalCount) {
     count.className = "tool-sidebar-item__count";
     count.textContent = `${tool.count || 0} run${tool.count === 1 ? "" : "s"}`;
 
-    const stats = document.createElement("dl");
-    stats.className = "tool-sidebar-item__stats";
-    stats.innerHTML = `
-      <dt>Runtime</dt>
-      <dd>${escapeHtml(formatDuration(tool.totalDurationSeconds || 0))}</dd>
-      <dt>Input</dt>
-      <dd>${escapeHtml(formatBytes(tool.totalInputBytes || 0))}</dd>
-      <dt>Output</dt>
-      <dd>${escapeHtml(formatBytes(tool.totalOutputBytes || 0))}</dd>
-    `;
-
     header.append(name, count);
-    item.append(header, stats);
+    item.append(header);
     item.addEventListener("click", () => {
       appState.selectedTool = appState.selectedTool === toolSlug ? null : toolSlug;
       tableState.page = 1;
