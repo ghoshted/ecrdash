@@ -108,9 +108,11 @@ const appState = {
   renderVersion: 0,
 };
 
+const initialPageUrl = new URL(window.location.href);
+
 function dashboardBaseUrl() {
   const configuredBasePath = window.ECRDASH_BASE_PATH || ".";
-  return new URL(`${configuredBasePath}/`, window.location.href);
+  return new URL(`${configuredBasePath}/`, initialPageUrl);
 }
 
 function dashboardRoutePath(toolSlug = null) {
