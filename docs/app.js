@@ -524,6 +524,15 @@ function replaceChart(key, canvasId, config) {
   appState.charts[key] = new Chart(canvas, config);
 }
 
+const CHART_GRAYSCALE = {
+  darkFill: "rgba(85, 85, 85, 0.8)",
+  darkBorder: "rgba(85, 85, 85, 1)",
+  mediumBorder: "rgba(112, 112, 112, 1)",
+  mediumFill: "rgba(112, 112, 112, 0.22)",
+  softFill: "rgba(136, 136, 136, 0.78)",
+  softBorder: "rgba(136, 136, 136, 1)",
+};
+
 function renderToolChart(summary) {
   const labels = summary.byTool.map((x) => x.name);
   const data = summary.byTool.map((x) => x.count);
@@ -537,8 +546,8 @@ function renderToolChart(summary) {
           label: "Runs",
           data,
           borderRadius: 1,
-          backgroundColor: "rgba(216, 90, 52, 0.8)",
-          borderColor: "rgba(216, 90, 52, 1)",
+          backgroundColor: CHART_GRAYSCALE.darkFill,
+          borderColor: CHART_GRAYSCALE.darkBorder,
           borderWidth: 1,
         },
       ],
@@ -567,8 +576,8 @@ function renderRuntimeTrend(summary) {
           pointRadius: 4,
           pointHoverRadius: 6,
           fill: true,
-          borderColor: "rgba(47, 125, 139, 1)",
-          backgroundColor: "rgba(47, 125, 139, 0.22)",
+          borderColor: CHART_GRAYSCALE.mediumBorder,
+          backgroundColor: CHART_GRAYSCALE.mediumFill,
           tension: 0.3,
         },
       ],
@@ -609,8 +618,8 @@ function renderInfraChart(summary, reports) {
           label: "Runs",
           data,
           borderRadius: 1,
-          backgroundColor: "rgba(34, 139, 34, 0.78)",
-          borderColor: "rgba(34, 139, 34, 1)",
+          backgroundColor: CHART_GRAYSCALE.softFill,
+          borderColor: CHART_GRAYSCALE.softBorder,
           borderWidth: 1,
         },
       ],
@@ -625,10 +634,14 @@ function renderInfraChart(summary, reports) {
 }
 
 function colorForTool(index, total) {
-  const hue = Math.round((index * 360) / Math.max(total, 1));
+  const safeTotal = Math.max(total, 1);
+  const maxLightness = 70;
+  const minLightness = 25;
+  const step = safeTotal > 1 ? (maxLightness - minLightness) / (safeTotal - 1) : 0;
+  const lightness = Math.round(maxLightness - step * index);
   return {
-    border: `hsl(${hue} 62% 38%)`,
-    fill: `hsl(${hue} 62% 58% / 0.78)`,
+    border: `hsl(0 0% ${Math.max(15, lightness - 14)}%)`,
+    fill: `hsl(0 0% ${lightness}% / 0.78)`,
   };
 }
 
