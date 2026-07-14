@@ -1,5 +1,5 @@
 :root {
-  --bg: #D0E7E6;
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
   --text: #121358;
   --muted: #2F578A;
@@ -112,7 +112,7 @@ body {
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.85rem 0.9rem;
 }
 
@@ -138,7 +138,7 @@ body {
   margin-top: 0.75rem;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 0.9rem;
 }
 
@@ -203,7 +203,7 @@ body {
 .tool-sidebar-select {
   width: 100%;
   padding: 0.72rem 2.4rem 0.72rem 0.85rem;
-  border-radius: 10px;
+  border-radius: 8px;
   border-color: color-mix(in srgb, var(--line) 72%, var(--accent) 28%);
   background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
 }
@@ -216,7 +216,7 @@ body {
 .tool-sidebar-summary {
   padding: 0.8rem;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
 }
 
@@ -306,7 +306,7 @@ select {
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 0.2rem 0.5rem;
 }
 
@@ -318,7 +318,7 @@ button:disabled {
   width: 100%;
   height: 320px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .map-status {
@@ -365,7 +365,7 @@ button:disabled {
   width: min(900px, calc(100vw - 2rem));
   max-height: calc(100vh - 3rem);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 0;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
 }
@@ -401,7 +401,7 @@ button:disabled {
 
 .report-detail-card {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0.8rem;
   background: #fcfcfc;
 }
