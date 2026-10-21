@@ -280,7 +280,7 @@ async function loadReports() {
       durationSeconds: durationSeconds(startTime, endTime, json.duration),
       inputSizeBytes: safeNumber(json.input_size_bytes),
       outputSizeBytes: safeNumber(json.final_outputs_size_bytes),
-      memoryUsedMb: safeNumber(json.memory_used),
+      memoryUsedMb: safeNumber(json.memory_used) / 1_000_000,
       cpuCoresAssigned: safeNumber(json.cpu_cores_assigned),
       cpuCoresUsed: safeNumber(json.cpu_cores_used),
       gpuCoresUsed: safeNumber(json.gpu_cores_used),
